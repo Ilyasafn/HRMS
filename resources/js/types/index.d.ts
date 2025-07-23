@@ -47,3 +47,8 @@ export interface Divisi {
     nama: string;
     keterangan: string;
 }
+
+export type Jabatan = {
+    id: number;
+    nama: string;
+};

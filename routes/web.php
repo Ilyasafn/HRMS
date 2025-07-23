@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DivisiController;
+use App\Http\Controllers\JabatanController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -14,6 +15,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
     Route::resource('divisi', DivisiController::class);
+    Route::resource('jabatan', JabatanController::class);
 });
 
 require __DIR__.'/settings.php';
