@@ -5,6 +5,8 @@ import AppLayout from '@/layouts/app-layout';
 import { Divisi } from '@/types';
 import { Edit, Plus, Trash } from 'lucide-react';
 import { useState } from 'react';
+import DeleteDivisiAlertDialog from './components/delete-divisi-alert-dialog';
+import DivisiFormDialog from './components/divisi-form-dialog';
 
 const DivisiList = ({ divisis }: { divisis: Divisi[] }) => {
     const [cari, setCari] = useState('');
@@ -24,9 +26,11 @@ const DivisiList = ({ divisis }: { divisis: Divisi[] }) => {
             <div className="p-4">
                 <div className="flex gap-4">
                     <Input value={cari} onChange={(e) => setCari(e.target.value)} placeholder="Cari divisi..." />
-                    <Button>
-                        <Plus /> Tambah Divisi
-                    </Button>
+                    <DivisiFormDialog purpose="tambah">
+                        <Button>
+                            <Plus /> Tambah Divisi
+                        </Button>
+                    </DivisiFormDialog>
                 </div>
                 <Table>
                     <TableHeader>
@@ -46,12 +50,16 @@ const DivisiList = ({ divisis }: { divisis: Divisi[] }) => {
                                     <TableHead>{divisi.nama}</TableHead>
                                     <TableHead>{divisi.keterangan}</TableHead>
                                     <TableHead>
-                                        <Button variant={'ghost'} size={'icon'}>
-                                            <Edit />
-                                        </Button>
-                                        <Button variant={'ghost'} size={'icon'}>
-                                            <Trash />
-                                        </Button>
+                                        <DivisiFormDialog divisi={divisi} purpose="edit">
+                                            <Button variant={'ghost'} size={'icon'}>
+                                                <Edit />
+                                            </Button>
+                                        </DivisiFormDialog>
+                                        <DeleteDivisiAlertDialog divisi={divisi}>
+                                            <Button variant={'ghost'} size={'icon'}>
+                                                <Trash />
+                                            </Button>
+                                        </DeleteDivisiAlertDialog>
                                     </TableHead>
                                 </TableRow>
                             ))}
