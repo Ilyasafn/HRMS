@@ -13,6 +13,11 @@ const mainNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
     },
+    {
+        title: 'Divisi',
+        href: route('divisi.index'),
+        icon: Folder,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
