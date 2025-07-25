@@ -23,12 +23,10 @@ class StoreKaryawanRequest extends FormRequest
     {
         return [
             'nama' => 'required|string|max:255',
-            'nik' => 'required|integer|max:255',
-            'divisi_id' => 'required|exists:divisis,id',
-            'jabatan_id' => 'required|exists:jabatans,id',
+            'nik' => 'required|string|max:8',
             'alamat' => 'required',
             'nomor_telepon' => 'required|string|max:16',
-            'tgl_masuk' => 'date',
+            'tgl_masuk' => 'nullable|date',
             'status' => 'required|in:Aktif,Tidak Aktif',
         ];
     }
@@ -38,8 +36,6 @@ class StoreKaryawanRequest extends FormRequest
         return [
             'nama.required' => 'Nama karyawan harus diisi.',
             'nik.required' => 'NIK harus diisi.',
-            'divisi_id.required' => 'Divisi harus dipilih.',
-            'jabatan_id.required' => 'Jabatan harus dipilih.',
             'alamat.required' => 'Alamat harus diisi.',
             'nomor_telepon.required' => 'Nomor telepon harus diisi.',
             'tgl_masuk.required' => 'Tanggal masuk harus diisi.',

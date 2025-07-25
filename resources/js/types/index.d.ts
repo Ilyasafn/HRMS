@@ -13,9 +13,17 @@ export interface BreadcrumbItem {
 export interface NavGroup {
     title: string;
     items: NavItem[];
+    menus: NavItem2[];
 }
 
 export interface NavItem {
+    title: string;
+    href: string;
+    icon?: LucideIcon | null;
+    isActive?: boolean;
+}
+
+export interface NavItem2 {
     title: string;
     href: string;
     icon?: LucideIcon | null;
@@ -51,4 +59,16 @@ export interface Divisi {
 export type Jabatan = {
     id: number;
     nama: string;
+};
+
+export type Karyawan = {
+    id: number;
+    nama: string;
+    nik: string;
+    divisi: Divisi; // there's a relationship with Divisi
+    jabatan: Jabatan; // relations with Jabatan
+    alamat: string;
+    nomor_telepon: string;
+    tgl_masuk: Date;
+    status: string[]; // e.g., 'Aktif', 'Tidak Aktif'
 };

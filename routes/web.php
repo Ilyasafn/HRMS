@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DivisiController;
 use App\Http\Controllers\JabatanController;
+use App\Http\Controllers\KaryawanController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -16,6 +17,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('divisi', DivisiController::class);
     Route::resource('jabatan', JabatanController::class);
+    Route::resource('karyawan', KaryawanController::class);
+
 });
 
 require __DIR__.'/settings.php';

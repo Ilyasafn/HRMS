@@ -14,9 +14,7 @@ return new class extends Migration
         Schema::create('karyawans', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->integer('nik')->unique();
-            $table->foreignId('divisi_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('jabatan_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('nik', 20)->unique();
             $table->string('alamat');
             $table->string('nomor_telepon');
             $table->date('tgl_masuk')->nullable();
