@@ -59,7 +59,7 @@ const KaryawanList = ({ karyawans }: { karyawans: Karyawan[] }) => {
                                     <TableHead>{karyawan.divisi?.nama || 'N/A'}</TableHead>
                                     <TableHead>{karyawan.jabatan?.nama || 'N/A'}</TableHead>
                                     <TableHead>{formatDate(karyawan.tgl_masuk) || 'N/A'}</TableHead>
-                                    <TableHead>{karyawan.alamat}</TableHead>
+                                    <TableHead>{karyawan.alamat || 'N/A'}</TableHead>
                                     <TableHead>{karyawan.nomor_telepon}</TableHead>
                                     <TableHead>{karyawan.status}</TableHead>
                                     <TableHead>

@@ -20,7 +20,7 @@ class KaryawanFactory extends Factory
     {
         return [
             'nama' => fake()->name(),
-            'nik' => fake()->unique()->numerify('########'), // NIK = 8 digit, 2 angka tgl masuk, 2 angka bulan masuk, 2 angka tahun masuk (eg. 99), 2 angka terakhir urutan masuk
+            'nik' => fake()->unique()->numerify('########'), // NIK = 8 digit, 2 angka bln masuk, 2 angka thn masuk, 2 angka divisi_id, 2 angka terakhir urutan masuk
             'alamat' => fake()->address(),
             'nomor_telepon' => fake()->phoneNumber(),
             'tgl_masuk' => fake()->date(),

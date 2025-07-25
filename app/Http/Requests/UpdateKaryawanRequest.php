@@ -24,7 +24,7 @@ class UpdateKaryawanRequest extends FormRequest
         return [
             'nama' => 'required|string|max:255',
             'nik' => 'required|string|max:8',
-            'alamat' => 'required',
+            'alamat' => 'nullable|string|max:255',
             'nomor_telepon' => 'required|string|max:16',
             'tgl_masuk' => 'nullable|date',
             'status' => 'required|in:Aktif,Tidak Aktif',

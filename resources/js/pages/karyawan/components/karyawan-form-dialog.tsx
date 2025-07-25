@@ -39,22 +39,22 @@ const KaryawanFormDialog: FC<Props> = ({ children, karyawan, purpose }) => {
         if (purpose === 'tambah') {
             post(route('karyawan.store'), {
                 onSuccess: () => {
-                    console.log('✅ Success bro!');
+                    // console.log('Success cuyy!');
                     setOpen(false);
                 },
-                onError: (errors) => {
-                    console.log('❌ Error dari server:', errors);
-                },
+                // onError: (errors) => {
+                //     console.log('Error dari server:', errors);
+                // },
             });
         } else {
             put(route('karyawan.update', karyawan?.id), {
                 onSuccess: () => {
-                    console.log('✅ Success bro!');
+                    // console.log('Success cuyy!');
                     setOpen(false);
                 },
-                onError: (errors) => {
-                    console.log('❌ Error dari server:', errors);
-                },
+                // onError: (errors) => {
+                //     console.log('Error dari server:', errors);
+                // },
             });
         }
     };
