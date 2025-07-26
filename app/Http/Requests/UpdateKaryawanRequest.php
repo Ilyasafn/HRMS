@@ -24,8 +24,9 @@ class UpdateKaryawanRequest extends FormRequest
         return [
             'nama' => 'required|string|max:255',
             'nik' => 'required|string|max:8',
+            'divisi_id' => 'required|exists:divisis,id',
             'alamat' => 'nullable|string|max:255',
-            'nomor_telepon' => 'required|string|max:16',
+            'nomor_telepon' => 'required|string|max:20',
             'tgl_masuk' => 'nullable|date',
             'status' => 'required|in:Aktif,Tidak Aktif',
         ];
@@ -36,6 +37,7 @@ class UpdateKaryawanRequest extends FormRequest
         return [
             'nama.required' => 'Nama karyawan harus diisi.',
             'nik.required' => 'NIK harus diisi.',
+            'divisi_id' => 'Divisi harus dipilih.',
             'alamat.required' => 'Alamat harus diisi.',
             'nomor_telepon.required' => 'Nomor telepon harus diisi.',
             'tgl_masuk.required' => 'Tanggal masuk harus diisi.',

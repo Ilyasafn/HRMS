@@ -4,17 +4,19 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Karyawan } from '@/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Divisi, Karyawan } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { ChevronDownIcon } from 'lucide-react';
 import React, { FC, PropsWithChildren, useState } from 'react';
 
 type Props = PropsWithChildren & {
     karyawan?: Karyawan;
+    divisis: Divisi[];
     purpose: 'tambah' | 'edit';
 };
 
-const KaryawanFormDialog: FC<Props> = ({ children, karyawan, purpose }) => {
+const KaryawanFormDialog: FC<Props> = ({ children, karyawan, divisis, purpose }) => {
     React.useEffect(() => {
         if (karyawan?.tgl_masuk) {
             setDate(new Date(karyawan.tgl_masuk));
@@ -27,6 +29,7 @@ const KaryawanFormDialog: FC<Props> = ({ children, karyawan, purpose }) => {
     const { data, setData, post, put } = useForm({
         nama: karyawan?.nama ?? '',
         nik: karyawan?.nik ?? '',
+        divisi_id: karyawan?.divisi.id ?? '',
         alamat: karyawan?.alamat ?? '',
         nomor_telepon: karyawan?.nomor_telepon ?? '',
         tgl_masuk: karyawan?.tgl_masuk ?? '',
@@ -39,22 +42,22 @@ const KaryawanFormDialog: FC<Props> = ({ children, karyawan, purpose }) => {
         if (purpose === 'tambah') {
             post(route('karyawan.store'), {
                 onSuccess: () => {
-                    // console.log('Success cuyy!');
-                    setOpen(false);
+                    console.log('Success nambah cuyy!');
+                    // setOpen(false);
                 },
-                // onError: (errors) => {
-                //     console.log('Error dari server:', errors);
-                // },
+                onError: (errors) => {
+                    console.log('Error dari server:', errors);
+                },
             });
         } else {
             put(route('karyawan.update', karyawan?.id), {
                 onSuccess: () => {
-                    // console.log('Success cuyy!');
-                    setOpen(false);
+                    console.log('Success ngedit cuyy!');
+                    // setOpen(false);
                 },
-                // onError: (errors) => {
-                //     console.log('Error dari server:', errors);
-                // },
+                onError: (errors) => {
+                    console.log('Error dari server:', errors);
+                },
             });
         }
     };
@@ -79,7 +82,7 @@ const KaryawanFormDialog: FC<Props> = ({ children, karyawan, purpose }) => {
                         <Input value={data.nik} onChange={(e) => setData('nik', e.target.value)} placeholder="NIK Karyawan" />
                     </div>
 
-                    {/* <div className="flex flex-row items-center gap-2">
+                    <div className="flex flex-row items-center gap-2">
                         <Label>Divisi</Label>
                         <Select value={data.divisi_id.toString()} onValueChange={(value) => setData('divisi_id', value)}>
                             <SelectTrigger>
@@ -94,7 +97,7 @@ const KaryawanFormDialog: FC<Props> = ({ children, karyawan, purpose }) => {
                             </SelectContent>
                         </Select>
 
-                        <Label>Jabatan</Label>
+                        {/* <Label>Jabatan</Label>
                         <Select value={data.jabatan_id.toString()} onValueChange={(value) => setData('jabatan_id', value)}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Pilih Jabatan" />
@@ -106,8 +109,8 @@ const KaryawanFormDialog: FC<Props> = ({ children, karyawan, purpose }) => {
                                     </SelectItem>
                                 ))}
                             </SelectContent>
-                        </Select>
-                    </div> */}
+                        </Select> */}
+                    </div>
 
                     <div className="flex flex-col gap-2">
                         <Label>Alamat</Label>
@@ -155,6 +158,7 @@ const KaryawanFormDialog: FC<Props> = ({ children, karyawan, purpose }) => {
                         onClick={() => {
                             console.log('berhasil submit');
                             handleSubmit();
+                            setOpen(false);
                         }}
                     >
                         Simpan

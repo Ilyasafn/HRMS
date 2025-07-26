@@ -13,9 +13,14 @@ class Karyawan extends Model
     protected $fillable = [
         'nama',
         'nik',
+        'divisi_id',
         'alamat',
         'nomor_telepon',
         'tgl_masuk',
         'status',
     ];
+
+    public function divisi() {
+        return $this->belongsTo(Divisi::class);
+    }
 }
