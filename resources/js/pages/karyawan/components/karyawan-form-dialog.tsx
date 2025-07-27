@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Divisi, Karyawan } from '@/types';
+import { Divisi, Jabatan, Karyawan } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { ChevronDownIcon } from 'lucide-react';
 import React, { FC, PropsWithChildren, useState } from 'react';
@@ -13,10 +13,11 @@ import React, { FC, PropsWithChildren, useState } from 'react';
 type Props = PropsWithChildren & {
     karyawan?: Karyawan;
     divisis: Divisi[];
+    jabatans: Jabatan[];
     purpose: 'tambah' | 'edit';
 };
 
-const KaryawanFormDialog: FC<Props> = ({ children, karyawan, divisis, purpose }) => {
+const KaryawanFormDialog: FC<Props> = ({ children, karyawan, divisis, jabatans, purpose }) => {
     React.useEffect(() => {
         if (karyawan?.tgl_masuk) {
             setDate(new Date(karyawan.tgl_masuk));
@@ -30,6 +31,7 @@ const KaryawanFormDialog: FC<Props> = ({ children, karyawan, divisis, purpose })
         nama: karyawan?.nama ?? '',
         nik: karyawan?.nik ?? '',
         divisi_id: karyawan?.divisi.id ?? '',
+        jabatan_id: karyawan?.jabatan.id ?? '',
         alamat: karyawan?.alamat ?? '',
         nomor_telepon: karyawan?.nomor_telepon ?? '',
         tgl_masuk: karyawan?.tgl_masuk ?? '',
@@ -97,7 +99,7 @@ const KaryawanFormDialog: FC<Props> = ({ children, karyawan, divisis, purpose })
                             </SelectContent>
                         </Select>
 
-                        {/* <Label>Jabatan</Label>
+                        <Label>Jabatan</Label>
                         <Select value={data.jabatan_id.toString()} onValueChange={(value) => setData('jabatan_id', value)}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Pilih Jabatan" />
@@ -109,7 +111,7 @@ const KaryawanFormDialog: FC<Props> = ({ children, karyawan, divisis, purpose })
                                     </SelectItem>
                                 ))}
                             </SelectContent>
-                        </Select> */}
+                        </Select>
                     </div>
 
                     <div className="flex flex-col gap-2">

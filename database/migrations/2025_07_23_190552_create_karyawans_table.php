@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('nama');
             $table->string('nik', 20)->unique();
             $table->foreignId('divisi_id')->nullable()->constrained('divisis')->nullOnDelete();
+            $table->foreignId('jabatan_id')->nullable()->constrained('jabatans')->nullOnDelete();
             $table->string('alamat')->nullable();
             $table->string('nomor_telepon');
             $table->date('tgl_masuk')->nullable();

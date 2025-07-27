@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreKaryawanRequest;
 use App\Http\Requests\UpdateKaryawanRequest;
 use App\Models\Divisi;
+use App\Models\Jabatan;
 use App\Models\Karyawan;
 use Inertia\Inertia;
 
@@ -16,8 +17,9 @@ class KaryawanController extends Controller
     public function index()
     {
         return Inertia::render('karyawan/index', [
-            'karyawans' => Karyawan::with('divisi')->get(),
+            'karyawans' => Karyawan::with('divisi', 'jabatan')->get(),
             'divisis' => Divisi::get(),
+            'jabatans' => Jabatan::get(),
         ]);
     }
 

@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Divisi;
+use App\Models\Jabatan;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,6 +22,7 @@ class KaryawanFactory extends Factory
             'nama' => fake()->name(),
             'nik' => fake()->unique()->numerify('########'), // NIK = 8 digit, 2 angka bln masuk, 2 angka thn masuk, 2 angka divisi_id, 2 angka terakhir urutan masuk
             'divisi_id' => Divisi::pluck('id')->random(),
+            'jabatan_id' => Jabatan::pluck('id')->random(), 
             'alamat' => fake()->address(),
             'nomor_telepon' => fake()->phoneNumber(),
             'tgl_masuk' => fake()->date(),

@@ -3,13 +3,13 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate } from '@/lib/utils';
-import { Divisi, Karyawan } from '@/types';
+import { Divisi, Jabatan, Karyawan } from '@/types';
 import { Edit, Plus, Trash } from 'lucide-react';
 import { useState } from 'react';
 import DeleteKaryawanAlertDialog from './components/delete-karyawan-alert-dialog';
 import KaryawanFormDialog from './components/karyawan-form-dialog';
 
-const KaryawanList = ({ karyawans, divisis }: { karyawans: Karyawan[]; divisis: Divisi[] }) => {
+const KaryawanList = ({ karyawans, divisis, jabatans }: { karyawans: Karyawan[]; divisis: Divisi[]; jabatans: Jabatan[] }) => {
     const [cari, setCari] = useState('');
     return (
         <AppLayout
@@ -27,7 +27,7 @@ const KaryawanList = ({ karyawans, divisis }: { karyawans: Karyawan[]; divisis: 
             <div className="p-4">
                 <div className="flex gap-4">
                     <Input placeholder="Cari karyawan..." value={cari} onChange={(e) => setCari(e.target.value)} />
-                    <KaryawanFormDialog divisis={divisis} purpose="tambah">
+                    <KaryawanFormDialog divisis={divisis} jabatans={jabatans} purpose="tambah">
                         <Button>
                             <Plus /> Tambah Karyawan
                         </Button>
@@ -63,7 +63,7 @@ const KaryawanList = ({ karyawans, divisis }: { karyawans: Karyawan[]; divisis: 
                                     <TableHead>{karyawan.nomor_telepon}</TableHead>
                                     <TableHead>{karyawan.status}</TableHead>
                                     <TableHead>
-                                        <KaryawanFormDialog purpose="edit" karyawan={karyawan} divisis={divisis}>
+                                        <KaryawanFormDialog purpose="edit" karyawan={karyawan} divisis={divisis} jabatans={jabatans}>
                                             <Button variant={'ghost'} size={'icon'}>
                                                 <Edit />
                                             </Button>

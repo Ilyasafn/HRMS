@@ -14,6 +14,7 @@ class Karyawan extends Model
         'nama',
         'nik',
         'divisi_id',
+        'jabatan_id',
         'alamat',
         'nomor_telepon',
         'tgl_masuk',
@@ -22,5 +23,9 @@ class Karyawan extends Model
 
     public function divisi() {
         return $this->belongsTo(Divisi::class);
+    }
+
+    public function jabatan() {
+        return $this->belongsTo(Jabatan::class);
     }
 }
