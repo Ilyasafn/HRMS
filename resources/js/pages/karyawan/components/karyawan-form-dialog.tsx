@@ -151,7 +151,15 @@ const KaryawanFormDialog: FC<Props> = ({ children, karyawan, divisis, jabatans, 
                         </Popover>
 
                         <Label>Status</Label>
-                        <Input value={data.status} onChange={(e) => setData('status', e.target.value)} placeholder="Status" />
+                        <Select value={data.status.toString()} onValueChange={(value) => setData('status', value)}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Pilih Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Aktif">Aktif</SelectItem>
+                                <SelectItem value="Tidak Aktif">Tidak Aktif</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
 
