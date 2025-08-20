@@ -3,6 +3,7 @@
 use App\Http\Controllers\DivisiController;
 use App\Http\Controllers\JabatanController;
 use App\Http\Controllers\KaryawanController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -16,8 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
     Route::resource('divisi', DivisiController::class);
-    Route::resource('jabatan', JabatanController::class);
-    Route::resource('karyawan', KaryawanController::class);
+    Route::resource('karyawan'.'', UserController::class);
 
 });
 

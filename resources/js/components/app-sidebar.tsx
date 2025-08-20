@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Blocks, BookOpen, ChartColumnBig, Folder, LayoutDashboard, Users } from 'lucide-react';
+import { Blocks, BookOpen, Folder, LayoutDashboard, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -15,17 +15,12 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Divisi',
-        href: route('divisi.index'),
+        href: '/divisi',
         icon: Blocks,
     },
     {
-        title: 'Jabatan',
-        href: route('jabatan.index'),
-        icon: ChartColumnBig,
-    },
-    {
         title: 'Karyawan',
-        href: route('karyawan.index'),
+        href: '/karyawan',
         icon: Users,
     },
 ];

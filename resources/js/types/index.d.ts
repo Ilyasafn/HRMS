@@ -41,10 +41,16 @@ export interface SharedData {
 
 export interface User {
     id: number;
-    name: string;
+    nama: string;
     email: string;
     avatar?: string;
     email_verified_at: string | null;
+    nik: string;
+    divisi: Divisi; // there's a relationship with Divisi
+    alamat: string;
+    nomor_telepon: string;
+    tgl_masuk: Date;
+    status: string[]; // e.g., 'Aktif', 'Tidak Aktif'
     created_at: string;
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
@@ -56,19 +62,4 @@ export interface Divisi {
     keterangan: string;
 }
 
-export type Jabatan = {
-    id: number;
-    nama: string;
-};
 
-export type Karyawan = {
-    id: number;
-    nama: string;
-    nik: string;
-    divisi: Divisi; // there's a relationship with Divisi
-    jabatan: Jabatan; // relations with Jabatan
-    alamat: string;
-    nomor_telepon: string;
-    tgl_masuk: Date;
-    status: string[]; // e.g., 'Aktif', 'Tidak Aktif'
-};

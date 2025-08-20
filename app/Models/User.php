@@ -18,10 +18,22 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'nama',
         'email',
         'password',
+        'nik',
+        'divisi_id',
+        'tgl_lahir',
+        'jenis_kelamin',
+        'alamat',
+        'nomor_telepon',
+        'tgl_masuk',
+        'status',
     ];
+
+    public function divisi() {
+        return $this->belongsTo(Divisi::class, 'divisi_id');
+    }
 
     /**
      * The attributes that should be hidden for serialization.

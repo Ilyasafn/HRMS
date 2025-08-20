@@ -9,12 +9,12 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Karyawan } from '@/types';
+import { User } from '@/types';
 import { router } from '@inertiajs/react';
 import { FC, PropsWithChildren } from 'react';
 
 type Props = PropsWithChildren & {
-    karyawan?: Karyawan;
+    karyawan?: User;
 };
 
 const DeleteKaryawanAlertDialog: FC<Props> = ({ children, karyawan }) => {
