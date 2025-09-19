@@ -8,6 +8,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\DivisiController;
+
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
 Route::get('/about', [WelcomeController::class, 'about'])->name('about');
@@ -27,6 +29,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('permission/resync', [PermissionController::class, 'resync'])->name('permission.resync');
     Route::apiResource('permission', PermissionController::class);
     Route::apiResource('doc', MediaController::class);
+    Route::put('divisi/bulk', [DivisiController::class, 'bulkUpdate'])->name('divisi.bulk.update');
+    Route::delete('divisi/bulk', [DivisiController::class, 'bulkDelete'])->name('divisi.bulk.destroy');
+    Route::get('divisi/archived', [DivisiController::class, 'archived'])->name('divisi.archived');
+    Route::put('divisi/{divisi}/restore', [DivisiController::class, 'restore'])->name('divisi.restore');
+    Route::delete('divisi/{divisi}/force-delete', [DivisiController::class, 'forceDelete'])->name('divisi.force-delete');
+    Route::apiResource('divisi', DivisiController::class);
 });
 
 require __DIR__.'/settings.php';
