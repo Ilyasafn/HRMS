@@ -1,0 +1,114 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\Store{{ Name }}Request;
+use App\Http\Requests\Update{{ Name }}Request;
+use App\Http\Requests\BulkUpdate{{ Name }}Request;
+use App\Http\Requests\BulkDelete{{ Name }}Request;
+use App\Models\{{ Name }};
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+{{ hasMediaControllerMethodsImport }}
+
+class {{ Name }}Controller extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $this->pass("index {{ name }}");
+        
+        $data = {{ Name }}::query()
+            //->with(['media'])
+            ->when($request->name, function($q, $v){
+                $q->where('name', $v);
+            });
+
+        return Inertia::render('{{ name }}/index', [
+            '{{ names }}' => $data->get(),
+            'query' => $request->input(),
+            'permissions' => [
+                'canAdd' => $this->user->can("create {{ name }}"),
+                'canShow' => $this->user->can("show {{ name }}"),
+                'canUpdate' => $this->user->can("update {{ name }}"),
+                'canDelete' => $this->user->can("delete {{ name }}"),
+            ]
+        ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Store{{ Name }}Request $request)
+    {
+        $this->pass("create {{ name }}");
+
+        $data = $request->validated();
+        {{ Name }}::create($data);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show({{ Name }} ${{ name }})
+    {
+        $this->pass("show {{ name }}");
+
+        return Inertia::render('{{ name }}/show', [
+            '{{ name }}' => ${{ name }},
+            'permissions' => [
+                'canUpdate' => $this->user->can("update {{ name }}"),
+                'canDelete' => $this->user->can("delete {{ name }}"),
+            ]
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Update{{ Name }}Request $request, {{ Name }} ${{ name }})
+    {
+        $this->pass("update {{ name }}");
+
+        $data = $request->validated();
+        ${{ name }}->update($data);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy({{ Name }} ${{ name }})
+    {
+        $this->pass("delete {{ name }}");
+
+        ${{ name }}->delete();
+    }
+
+    /**
+     * BulkUpdate the specified resource from storage.
+     */
+    public function bulkUpdate(BulkUpdate{{ Name }}Request $request)
+    {
+        $this->pass("update {{ name }}");
+
+        $data = $request->validated();
+        {{ Name }}::whereIn('id', $data['{{ name }}_ids'])->update($data);
+    }
+
+    /**
+     * BulkDelete the specified resource from storage.
+     */
+    public function bulkDelete(BulkDelete{{ Name }}Request $request)
+    {
+        $this->pass("delete {{ name }}");
+
+        $data = $request->validated();
+        {{ Name }}::whereIn('id', $data['{{ name }}_ids'])->delete();
+    }
+
+    {{ softDeleteMethods }}
+    
+    {{ hasMediaControllerMethods }}
+}

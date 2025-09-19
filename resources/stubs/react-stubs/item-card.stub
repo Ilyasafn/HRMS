@@ -1,0 +1,23 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FC } from 'react';
+import { {{ Name }} } from '@/types/{{ name }}';
+
+type Props = {
+  {{ name }}: {{ Name }};
+  className?: string;
+};
+
+const {{ Name }}ItemCard: FC<Props> = ({ {{ name }}, className }) => {
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle>{ {{ name }}.name }</CardTitle>
+        <CardDescription>
+            ID: { {{ name }}.id }
+        </CardDescription>
+      </CardHeader>
+    </Card>
+  );
+};
+
+export default {{ Name }}ItemCard;

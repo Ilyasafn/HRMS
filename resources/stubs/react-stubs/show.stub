@@ -1,0 +1,26 @@
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import AppLayout from '@/layouts/app-layout';
+import { {{ Name }} } from '@/types/{{ name }}';
+import { FC } from 'react';
+
+type Props = {
+  {{ name }}: {{ Name }};
+};
+
+const Show{{ Name }}: FC<Props> = ({ {{ name }} }) => {
+  return (
+    <AppLayout title="Detail {{ Name }}" description="Detail {{ name }}">
+      <Card>
+        <CardHeader>
+          <CardTitle>{ {{ name }}.name }</CardTitle>
+          <CardDescription>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Odio, quo impedit cupiditate voluptas culpa magnam itaque distinctio at ullam,
+            beatae perferendis doloremque facilis mollitia, quod corporis. Autem voluptatum ipsum placeat.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    </AppLayout>
+  );
+};
+
+export default Show{{ Name }};

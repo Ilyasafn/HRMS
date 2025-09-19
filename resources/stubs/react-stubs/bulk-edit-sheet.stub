@@ -1,0 +1,52 @@
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { em } from '@/lib/utils';
+import { {{ Name }} } from '@/types/{{ name }}';
+import { useForm } from '@inertiajs/react';
+import { Check, X } from 'lucide-react';
+import { FC, PropsWithChildren } from 'react';
+import { toast } from 'sonner';
+
+type Props = PropsWithChildren & {
+  {{ name }}Ids: {{ Name }}['id'][];
+};
+
+const {{ Name }}BulkEditSheet: FC<Props> = ({ children, {{ name }}Ids }) => {
+  const { data, put } = useForm({
+    {{ name }}_ids: {{ name }}Ids,
+  });
+
+  const handleSubmit = () => {
+    put(route('{{ name }}.bulk.update'), {
+      preserveScroll: true,
+      onSuccess: () => {
+        toast.success('{{ Name }} updated successfully');
+      },
+      onError: (e) => toast.error(em(e)),
+    });
+  };
+
+  return (
+    <Sheet>
+      <SheetTrigger asChild>{children}</SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Ubah {{ name }}</SheetTitle>
+          <SheetDescription>Ubah data {data.{{ name }}_ids.length} {{ name }}</SheetDescription>
+        </SheetHeader>
+        <SheetFooter>
+          <Button type="submit" onClick={handleSubmit}>
+            <Check /> Simpan {{ name }}
+          </Button>
+          <SheetClose asChild>
+            <Button variant={'outline'}>
+              <X /> Batalin
+            </Button>
+          </SheetClose>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
+};
+
+export default {{ Name }}BulkEditSheet;

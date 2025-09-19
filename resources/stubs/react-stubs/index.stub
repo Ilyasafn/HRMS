@@ -1,0 +1,157 @@
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AppLayout from '@/layouts/app-layout';
+import { SharedData } from '@/types';
+import { {{ Name }} } from '@/types/{{ name }}';
+import { Link, usePage } from '@inertiajs/react';
+import { Edit, Filter, Folder, FolderArchive, Image, Plus, Trash2 } from 'lucide-react';
+import { FC, useState } from 'react';
+import {{ Name }}DeleteDialog from './components/{{ name }}-delete-dialog';
+import {{ Name }}FilterSheet from './components/{{ name }}-filter-sheet';
+import {{ Name }}FormSheet from './components/{{ name }}-form-sheet';
+import {{ Name }}BulkEditSheet from './components/{{ name }}-bulk-edit-sheet';
+import {{ Name }}BulkDeleteDialog from './components/{{ name }}-bulk-delete-dialog';
+import {{ Name }}UploadMediaSheet from './components/{{ name }}-upload-sheet';
+
+type Props = {
+  {{ names }}: {{ Name }}[];
+  query: { [key: string]: string };
+};
+
+const {{ Name }}List: FC<Props> = ({ {{ names }}, query }) => {
+  const [ids, setIds] = useState<number[]>([]);
+  const [cari, setCari] = useState('');
+
+  const { permissions } = usePage<SharedData>().props;
+
+  return (
+    <AppLayout
+      title="{{ Name }}s"
+      description="Manage your {{ names }}"
+      actions={
+        <>
+          {permissions?.canAdd && (
+            <{{ Name }}FormSheet purpose="create">
+              <Button>
+                <Plus />
+                Create new {{ name }}
+              </Button>
+            </{{ Name }}FormSheet>
+          )}
+          {{ archivedButton }}
+        </>
+      }
+    >
+      <div className="flex gap-2">
+        <Input placeholder="Search {{ names }}..." value={cari} onChange={(e) => setCari(e.target.value)} />
+        <{{ Name }}FilterSheet query={query}>
+          <Button>
+            <Filter />
+            Filter data
+            {Object.values(query).filter((val) => val && val !== '').length > 0 && (
+              <Badge variant="secondary">{Object.values(query).filter((val) => val && val !== '').length}</Badge>
+            )}
+          </Button>
+        </{{ Name }}FilterSheet>
+        {ids.length > 0 && (
+          <>
+            <Button variant={'ghost'} disabled>
+              {ids.length} item selected
+            </Button>
+            <{{ Name }}BulkEditSheet {{ name }}Ids={ids}>
+              <Button>
+                <Edit /> Edit selected
+              </Button>
+            </{{ Name }}BulkEditSheet>
+            <{{ Name }}BulkDeleteDialog {{ name }}Ids={ids}>
+              <Button variant={'destructive'}>
+                <Trash2 /> Delete selected
+              </Button>
+            </{{ Name }}BulkDeleteDialog>
+          </>
+        )}
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>
+              <Button variant={'ghost'} size={'icon'} asChild>
+                <Label>
+                  <Checkbox
+                    checked={ids.length === {{ names }}.length}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setIds({{ names }}.map(({{ name }}) => {{ name }}.id));
+                      } else {
+                        setIds([]);
+                      }
+                    }}
+                  />
+                </Label>
+              </Button>
+            </TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {{{ names }}
+            .filter(({{ name }}) => JSON.stringify({{ name }}).toLowerCase().includes(cari.toLowerCase()))
+            .map(({{ name }}) => (
+              <TableRow key={{{ name }}.id}>
+                <TableCell>
+                  <Button variant={'ghost'} size={'icon'} asChild>
+                    <Label>
+                      <Checkbox
+                        checked={ids.includes({{ name }}.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setIds([...ids, {{ name }}.id]);
+                          } else {
+                            setIds(ids.filter((id) => id !== {{ name }}.id));
+                          }
+                        }}
+                      />
+                    </Label>
+                  </Button>
+                </TableCell>
+                <TableCell>{ {{ name }}.name }</TableCell>
+                <TableCell>
+                  {permissions?.canShow && (
+                    <Button variant={'ghost'} size={'icon'}>
+                      <Link href={route('{{ name }}.show', {{ name }}.id)}>
+                        <Folder />
+                      </Link>
+                    </Button>
+                  )}
+                  {permissions?.canUpdate && (
+                    <>
+                      {{ uploadButton }}
+                      <{{ Name }}FormSheet purpose="edit" {{ name }}={{{ name }}}>
+                        <Button variant={'ghost'} size={'icon'}>
+                          <Edit />
+                        </Button>
+                      </{{ Name }}FormSheet>
+                    </>
+                  )}
+                  {permissions?.canDelete && (
+                    <{{ Name }}DeleteDialog {{ name }}={{{ name }}}>
+                      <Button variant={'ghost'} size={'icon'}>
+                        <Trash2 />
+                      </Button>
+                    </{{ Name }}DeleteDialog>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+        </TableBody>
+      </Table>
+    </AppLayout>
+  );
+};
+
+export default {{ Name }}List;
