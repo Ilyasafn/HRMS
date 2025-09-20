@@ -2,10 +2,19 @@ import FormControl from '@/components/form-control';
 import SubmitButton from '@/components/submit-button';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { capitalizeWords, em } from '@/lib/utils';
 import { FormPurpose } from '@/types';
 import { Role } from '@/types/role';
@@ -56,13 +65,13 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
   };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>{capitalizeWords(purpose)} data user</SheetTitle>
-          <SheetDescription>Form untuk {purpose} data user</SheetDescription>
-        </SheetHeader>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{capitalizeWords(purpose)} data user</DialogTitle>
+          <DialogDescription>Form untuk {purpose} data user</DialogDescription>
+        </DialogHeader>
         <ScrollArea className="flex-1 overflow-y-auto">
           <form
             className="space-y-6 px-4"
@@ -93,7 +102,7 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
               </>
             )}
             <FormControl label="Select role">
-              <div className="grid">
+              <div className="flex flex-row flex-wrap gap-2">
                 {roles.map((r) => (
                   <Label key={r.id} className="flex h-8 items-center gap-2">
                     <Checkbox
@@ -107,16 +116,16 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
             </FormControl>
           </form>
         </ScrollArea>
-        <SheetFooter>
-          <SubmitButton onClick={handleSubmit} label={`${capitalizeWords(purpose)} user`} loading={processing} disabled={processing} />
-          <SheetClose asChild>
+        <DialogFooter>
+          <DialogClose asChild>
             <Button variant={'outline'}>
-              <X /> Batalin
+              <X /> Batal
             </Button>
-          </SheetClose>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+          </DialogClose>
+          <SubmitButton onClick={handleSubmit} label={`${capitalizeWords(purpose)} user`} loading={processing} disabled={processing} />
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 

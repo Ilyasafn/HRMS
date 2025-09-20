@@ -1,9 +1,18 @@
 import FormControl from '@/components/form-control';
 import SubmitButton from '@/components/submit-button';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { capitalizeWords, em } from '@/lib/utils';
 import { FormPurpose } from '@/types';
 import { Permission } from '@/types/role';
@@ -49,13 +58,13 @@ const PermissionFormSheet: FC<Props> = ({ children, permission, purpose }) => {
   };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>{capitalizeWords(purpose)} data permission</SheetTitle>
-          <SheetDescription>Form untuk {purpose} data permission</SheetDescription>
-        </SheetHeader>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{capitalizeWords(purpose)} data permission</DialogTitle>
+          <DialogDescription>Form untuk {purpose} data permission</DialogDescription>
+        </DialogHeader>
         <ScrollArea className="flex-1 overflow-y-auto">
           <form
             className="space-y-6 px-4"
@@ -72,16 +81,16 @@ const PermissionFormSheet: FC<Props> = ({ children, permission, purpose }) => {
             </FormControl>
           </form>
         </ScrollArea>
-        <SheetFooter>
-          <SubmitButton onClick={handleSubmit} label={`${capitalizeWords(purpose)} permission`} loading={processing} disabled={processing} />
-          <SheetClose asChild>
+        <DialogFooter>
+          <DialogClose asChild>
             <Button variant={'outline'}>
-              <X /> Batalin
+              <X /> Batal
             </Button>
-          </SheetClose>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+          </DialogClose>
+          <SubmitButton onClick={handleSubmit} label={`${capitalizeWords(purpose)} permission`} loading={processing} disabled={processing} />
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
