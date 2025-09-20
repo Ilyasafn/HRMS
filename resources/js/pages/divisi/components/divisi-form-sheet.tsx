@@ -1,10 +1,20 @@
 import FormControl from '@/components/form-control';
 import SubmitButton from '@/components/submit-button';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { em, capitalizeWords } from '@/lib/utils';
+import { capitalizeWords, em } from '@/lib/utils';
 import { FormPurpose } from '@/types';
 import { Divisi } from '@/types/divisi';
 import { useForm } from '@inertiajs/react';
@@ -22,6 +32,7 @@ const DivisiFormSheet: FC<Props> = ({ children, divisi, purpose }) => {
 
   const { data, setData, put, post, reset, processing } = useForm({
     name: divisi?.name ?? '',
+    description: divisi?.description ?? '',
   });
 
   const handleSubmit = () => {
@@ -48,13 +59,13 @@ const DivisiFormSheet: FC<Props> = ({ children, divisi, purpose }) => {
   };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>{capitalizeWords(purpose)} data divisi</SheetTitle>
-          <SheetDescription>Form untuk {purpose} data divisi</SheetDescription>
-        </SheetHeader>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{capitalizeWords(purpose)} data divisi</DialogTitle>
+          <DialogDescription>Form untuk {purpose} data divisi</DialogDescription>
+        </DialogHeader>
         <ScrollArea className="flex-1 overflow-y-auto">
           <form
             className="space-y-6 px-4"
@@ -63,21 +74,24 @@ const DivisiFormSheet: FC<Props> = ({ children, divisi, purpose }) => {
               handleSubmit();
             }}
           >
-            <FormControl label="Nama divisi">
+            <FormControl className="space-y-4">
+              <Label>Nama Divisi</Label>
               <Input type="text" placeholder="Name" value={data.name} onChange={(e) => setData('name', e.target.value)} />
+              <Label>Deskripsi</Label>
+              <Input type="text" placeholder="Description" value={data.description} onChange={(e) => setData('description', e.target.value)} />
             </FormControl>
           </form>
         </ScrollArea>
-        <SheetFooter>
-          <SubmitButton onClick={handleSubmit} label={`${capitalizeWords(purpose)} divisi`} loading={processing} disabled={processing} />
-          <SheetClose asChild>
+        <DialogFooter>
+          <DialogClose asChild>
             <Button variant={'outline'}>
-              <X /> Batalin
+              <X /> Batal
             </Button>
-          </SheetClose>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+          </DialogClose>
+          <SubmitButton onClick={handleSubmit} label={`${capitalizeWords(purpose)} divisi`} loading={processing} disabled={processing} />
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -8,14 +8,13 @@ import AppLayout from '@/layouts/app-layout';
 import { SharedData } from '@/types';
 import { Divisi } from '@/types/divisi';
 import { Link, usePage } from '@inertiajs/react';
-import { Edit, Filter, Folder, FolderArchive, Image, Plus, Trash2 } from 'lucide-react';
+import { Edit, Filter, Folder, FolderArchive, Plus, Trash2 } from 'lucide-react';
 import { FC, useState } from 'react';
+import DivisiBulkDeleteDialog from './components/divisi-bulk-delete-dialog';
+import DivisiBulkEditSheet from './components/divisi-bulk-edit-sheet';
 import DivisiDeleteDialog from './components/divisi-delete-dialog';
 import DivisiFilterSheet from './components/divisi-filter-sheet';
 import DivisiFormSheet from './components/divisi-form-sheet';
-import DivisiBulkEditSheet from './components/divisi-bulk-edit-sheet';
-import DivisiBulkDeleteDialog from './components/divisi-bulk-delete-dialog';
-import DivisiUploadMediaSheet from './components/divisi-upload-sheet';
 
 type Props = {
   divisis: Divisi[];
@@ -43,10 +42,10 @@ const DivisiList: FC<Props> = ({ divisis, query }) => {
             </DivisiFormSheet>
           )}
           <Button variant={'destructive'} size={'icon'} asChild>
-    <Link href={route('divisi.archived')}>
-        <FolderArchive />
-    </Link>
-</Button>
+            <Link href={route('divisi.archived')}>
+              <FolderArchive />
+            </Link>
+          </Button>
         </>
       }
     >
@@ -99,6 +98,7 @@ const DivisiList: FC<Props> = ({ divisis, query }) => {
               </Button>
             </TableHead>
             <TableHead>Name</TableHead>
+            <TableHead>Description</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -123,7 +123,8 @@ const DivisiList: FC<Props> = ({ divisis, query }) => {
                     </Label>
                   </Button>
                 </TableCell>
-                <TableCell>{ divisi.name }</TableCell>
+                <TableCell>{divisi.name}</TableCell>
+                <TableCell>{divisi.description}</TableCell>
                 <TableCell>
                   {permissions?.canShow && (
                     <Button variant={'ghost'} size={'icon'}>
@@ -134,7 +135,6 @@ const DivisiList: FC<Props> = ({ divisis, query }) => {
                   )}
                   {permissions?.canUpdate && (
                     <>
-                      
                       <DivisiFormSheet purpose="edit" divisi={divisi}>
                         <Button variant={'ghost'} size={'icon'}>
                           <Edit />
