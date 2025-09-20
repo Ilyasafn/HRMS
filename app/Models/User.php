@@ -27,6 +27,14 @@ class User extends Authenticatable implements HasMedia
         'name',
         'email',
         'password',
+        'nik',
+        'divisi_id',
+        'tgl_lahir',
+        'jenis_kelamin',
+        'alamat',
+        'no_telp',
+        'tgl_masuk',
+        'status',
     ];
 
     /**
@@ -64,5 +72,10 @@ class User extends Authenticatable implements HasMedia
         $this->addMediaConversion('preview')
             ->fit(Fit::Contain, 300, 300)
             ->nonQueued();
+    }
+
+    public function divisi()
+    {
+        return $this->belongsTo(Divisi::class);
     }
 }

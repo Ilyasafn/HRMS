@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Divisi;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -28,6 +29,14 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'nik' => fake()->unique()->numerify('########'), // NIK = 8 digit, 2 angka bln masuk, 2 angka thn masuk, 2 angka divisi_id, 2 angka terakhir urutan masuk
+            'divisi_id' => Divisi::pluck('id')->random(),
+            'tgl_lahir' => fake()->dateTime(),
+            'jenis_kelamin' => fake()->randomElement(['Laki-laki', 'Perempuan']),
+            'alamat' => fake()->address(),
+            'no_telp' => fake()->phoneNumber(),
+            'tgl_masuk' => fake()->dateTime(),
+            'status' => fake()->randomElement(['Aktif', 'Tidak Aktif']),
             'remember_token' => Str::random(10),
         ];
     }

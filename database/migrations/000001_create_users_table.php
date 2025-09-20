@@ -17,6 +17,15 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('nik', 20)->nullable()->unique();
+            $table->foreignId('divisi_id')->nullable()->constrained('divisis')->nullOnDelete();
+            $table->dateTime('tgl_lahir')->nullable();
+            $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan'])->nullable();
+            $table->string('alamat')->nullable();
+            $table->string('no_telp')->nullable();
+            $table->string('tgl_masuk')->nullable();
+            $table->enum("status", ["Aktif", "Tidak Aktif"])->default("Aktif");
+
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

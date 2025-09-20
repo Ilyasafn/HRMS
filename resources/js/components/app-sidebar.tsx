@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Building, Database, KeySquare, LayoutGrid, Users } from 'lucide-react';
+import { Building, Database, KeySquare, LayoutGrid, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -19,9 +19,14 @@ const mainNavItems: NavItem[] = [
     icon: Building,
   },
   {
+    title: 'Karyawan',
+    href: route('user.index'),
+    icon: Building,
+  },
+  {
     title: 'Documentation',
     href: route('documentation'),
-    icon: BookOpen,
+    icon: Users,
   },
 ];
 
@@ -48,12 +53,6 @@ export function AppSidebar() {
         <NavMain items={mainNavItems} label="Dashboard" />
         <NavMain
           items={[
-            {
-              title: 'User management',
-              href: route('user.index'),
-              icon: Users,
-              available: menus.user,
-            },
             {
               title: 'Role & permission',
               href: route('role.index'),

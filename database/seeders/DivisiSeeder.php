@@ -9,6 +9,17 @@ class DivisiSeeder extends Seeder
 {
     public function run(): void
     {
-        Divisi::factory()->count(10)->create();
+        Divisi::create([
+            'name' => 'Admin',
+            'description' => 'Divisi ADMIN',
+        ]);
+        Divisi::create([
+            'name' => 'HRD',
+            'description' => 'Divisi HRD',
+        ]);
+        Divisi::create([
+            'name' => 'IT',
+            'description' => 'Divisi IT',
+        ]);
     }
 }

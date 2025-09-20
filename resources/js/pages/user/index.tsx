@@ -94,7 +94,12 @@ const UserList: FC<Props> = ({ users, query }) => {
             </TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Role names</TableHead>
+            <TableHead>Divisi</TableHead>
+            <TableHead>Jabatan</TableHead>
+            <TableHead>Nik</TableHead>
+            <TableHead>Alamat</TableHead>
+            <TableHead>Handphone</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -121,7 +126,12 @@ const UserList: FC<Props> = ({ users, query }) => {
                 </TableCell>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
+                <TableCell>{user.divisi?.name || 'N/A'}</TableCell>
                 <TableCell>{user.roles?.flatMap((r) => r.name)?.join(', ')}</TableCell>
+                <TableCell>{user.nik}</TableCell>
+                <TableCell>{user.alamat}</TableCell>
+                <TableCell>{user.no_telp}</TableCell>
+                <TableCell>{user.status}</TableCell>
                 <TableCell>
                   <Button variant={'ghost'} size={'icon'}>
                     <Link href={route('user.show', user.id)}>

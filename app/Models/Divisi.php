@@ -17,12 +17,12 @@ class Divisi extends Model
 
     //protected $table = 'divisis';
 
-    /*
+    
     protected $fillable = [
         'name',
         'description'
     ];
-    */
+    
 
     protected $guarded = [
         'id',
@@ -30,5 +30,8 @@ class Divisi extends Model
         'updated_at',
     ];
 
-    
+    public function user()
+    {
+        return $this->hasMany(User::class);
+    }
 }

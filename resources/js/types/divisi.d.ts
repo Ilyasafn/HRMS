@@ -1,6 +1,3 @@
-
-
-
 export type Divisi = {
   id: number;
   name: string;

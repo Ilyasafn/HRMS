@@ -21,7 +21,7 @@ class UserController extends Controller
         $this->pass('index user');
 
         $data = User::query()
-            ->with(['media', 'roles'])
+            ->with(['media', 'roles', 'divisi'])
             ->when($request->name, function($q, $v) {
                 $q->where('name', $v);
             });
@@ -29,6 +29,7 @@ class UserController extends Controller
         return Inertia::render('user/index', [
             'users' => $data->get(),
             'query' => $request->input(),
+            'divisi' => $data->get(),
             'roles' => Role::whereNot('name', "superadmin")->get()
         ]);
     }
