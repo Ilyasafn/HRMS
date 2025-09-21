@@ -6,6 +6,7 @@ use App\Http\Requests\BulkDeleteUserRequest;
 use App\Http\Requests\BulkUpdateUserRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\Divisi;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,7 +22,7 @@ class UserController extends Controller
         $this->pass('index user');
 
         $data = User::query()
-            ->with(['media', 'roles', 'divisi'])
+            ->with(['media', 'roles', 'divisis'])
             ->when($request->name, function($q, $v) {
                 $q->where('name', $v);
             });
@@ -29,7 +30,7 @@ class UserController extends Controller
         return Inertia::render('user/index', [
             'users' => $data->get(),
             'query' => $request->input(),
-            'divisi' => $data->get(),
+            'divisis' => Divisi::get(),
             'roles' => Role::whereNot('name', "superadmin")->get()
         ]);
     }

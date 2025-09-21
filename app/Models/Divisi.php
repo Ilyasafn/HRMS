@@ -30,7 +30,7 @@ class Divisi extends Model
         'updated_at',
     ];
 
-    public function user()
+    public function users()
     {
         return $this->hasMany(User::class);
     }

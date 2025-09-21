@@ -1,6 +1,7 @@
 import FormControl from '@/components/form-control';
 import SubmitButton from '@/components/submit-button';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
@@ -14,14 +15,17 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { capitalizeWords, em } from '@/lib/utils';
 import { FormPurpose } from '@/types';
+import { Divisi } from '@/types/divisi';
 import { Role } from '@/types/role';
 import { User } from '@/types/user';
 import { useForm, usePage } from '@inertiajs/react';
-import { X } from 'lucide-react';
-import { FC, PropsWithChildren, useState } from 'react';
+import { ChevronDownIcon, X } from 'lucide-react';
+import React, { FC, PropsWithChildren, useState } from 'react';
 import { toast } from 'sonner';
 
 type Props = PropsWithChildren & {
@@ -31,16 +35,27 @@ type Props = PropsWithChildren & {
 
 const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
   const { roles } = usePage<{ roles: Role[] }>().props;
+  const { divisis } = usePage<{ divisis: Divisi[] }>().props;
 
-  const [open, setOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [date, setDate] = useState<Date | undefined>(undefined);
 
   const { data, setData, put, post, reset, processing } = useForm({
     name: user?.name ?? '',
     email: user?.email ?? '',
+    divisi: user?.divisi?.id.toString() ?? '',
+    tgl_masuk: user?.tgl_masuk ?? '',
     password: user ? undefined : '',
     password_confirmation: user ? undefined : '',
     roles: user?.roles?.flatMap((r) => r.name) ?? [],
   });
+
+  React.useEffect(() => {
+    if (user?.tgl_masuk) {
+      setDate(new Date(user.tgl_masuk));
+    }
+  }, [user]);
 
   const handleSubmit = () => {
     if (purpose === 'create' || purpose === 'duplicate') {
@@ -49,7 +64,7 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
         onSuccess: () => {
           toast.success('User created successfully');
           reset();
-          setOpen(false);
+          setDialogOpen(false);
         },
         onError: (e) => toast.error(em(e)),
       });
@@ -65,7 +80,7 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -85,6 +100,45 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
             </FormControl>
             <FormControl label="Email address">
               <Input type="email" placeholder="username@domain.com" value={data.email} onChange={(e) => setData('email', e.target.value)} />
+            </FormControl>
+            <FormControl label="Divisi">
+              <Select value={data.divisi.toString()} onValueChange={(value) => setData('divisi', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih Divisi" />
+                </SelectTrigger>
+                <SelectContent>
+                  {divisis.map((divisi) => (
+                    <SelectItem key={divisi.id} value={divisi.id.toString()}>
+                      {divisi.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormControl>
+            <FormControl label="Tanggal masuk">
+              <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" id="date" className="w-48 justify-between font-normal">
+                    {date ? date.toLocaleDateString() : 'Select date'}
+                    <ChevronDownIcon />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    captionLayout="dropdown"
+                    onSelect={(date) => {
+                      setDate(date);
+                      setPopoverOpen(false);
+                      if (date) {
+                        const formatted = date.toISOString().split('T')[0];
+                        setData('tgl_masuk', formatted);
+                      }
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
             </FormControl>
             {purpose == 'create' && (
               <>

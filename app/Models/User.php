@@ -74,7 +74,7 @@ class User extends Authenticatable implements HasMedia
             ->nonQueued();
     }
 
-    public function divisi()
+    public function divisis()
     {
         return $this->belongsTo(Divisi::class);
     }
