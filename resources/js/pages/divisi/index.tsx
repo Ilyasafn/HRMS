@@ -29,6 +29,16 @@ const DivisiList: FC<Props> = ({ divisis, query }) => {
 
   return (
     <AppLayout
+      breadcrumbs={[
+        {
+          title: 'Dashboard',
+          href: '/dashboard',
+        },
+        {
+          title: 'Divisi',
+          href: route('divisi.index'),
+        },
+      ]}
       title="Divisis"
       description="Manage your divisis"
       actions={
@@ -97,15 +107,17 @@ const DivisiList: FC<Props> = ({ divisis, query }) => {
                 </Label>
               </Button>
             </TableHead>
+            <TableHead>No</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Description</TableHead>
+            <TableHead>Jumlah Karyawan</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {divisis
             .filter((divisi) => JSON.stringify(divisi).toLowerCase().includes(cari.toLowerCase()))
-            .map((divisi) => (
+            .map((divisi, i) => (
               <TableRow key={divisi.id}>
                 <TableCell>
                   <Button variant={'ghost'} size={'icon'} asChild>
@@ -123,8 +135,10 @@ const DivisiList: FC<Props> = ({ divisis, query }) => {
                     </Label>
                   </Button>
                 </TableCell>
+                <TableCell>{i + 1}</TableCell>
                 <TableCell>{divisi.name}</TableCell>
                 <TableCell>{divisi.description}</TableCell>
+                <TableCell>{divisi.users_count ?? 0}</TableCell>
                 <TableCell>
                   {permissions?.canShow && (
                     <Button variant={'ghost'} size={'icon'}>

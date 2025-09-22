@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateDivisiRequest;
 use App\Http\Requests\BulkUpdateDivisiRequest;
 use App\Http\Requests\BulkDeleteDivisiRequest;
 use App\Models\Divisi;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -21,9 +22,11 @@ class DivisiController extends Controller
         $this->pass("index divisi");
         
         $data = Divisi::query()
+            ->withCount('users')
             //->with(['media'])
             ->when($request->name, function($q, $v){
                 $q->where('name', $v);
+            
             });
 
         return Inertia::render('divisi/index', [
@@ -58,6 +61,7 @@ class DivisiController extends Controller
 
         return Inertia::render('divisi/show', [
             'divisi' => $divisi,
+            'users' => $divisi->users,
             'permissions' => [
                 'canUpdate' => $this->user->can("update divisi"),
                 'canDelete' => $this->user->can("delete divisi"),

@@ -4,4 +4,5 @@ export type Divisi = {
   description: string;
   created_at: string;
   updated_at: string;
+  users_count?: number;
 };
