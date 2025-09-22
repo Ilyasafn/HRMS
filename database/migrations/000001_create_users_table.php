@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('nik', 20)->nullable()->unique();
+            $table->string('nik', 8)->nullable()->unique();
             $table->foreignId('divisi_id')->nullable()->constrained('divisis')->nullOnDelete();
             $table->dateTime('tgl_lahir')->nullable();
             $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan'])->nullable();

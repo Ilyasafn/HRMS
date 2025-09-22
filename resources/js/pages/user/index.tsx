@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { capitalizeWords } from '@/lib/utils';
 import { User } from '@/types/user';
 import { Link } from '@inertiajs/react';
 import { Edit, Filter, Folder, FolderArchive, Plus, Trash2 } from 'lucide-react';
@@ -93,11 +94,10 @@ const UserList: FC<Props> = ({ users, query }) => {
               </Button>
             </TableHead>
             <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
+            <TableHead>Nik</TableHead>
             <TableHead>Divisi</TableHead>
             <TableHead>Jabatan</TableHead>
-            <TableHead>Nik</TableHead>
-            <TableHead>Alamat</TableHead>
+            <TableHead>Jenis Kelamin</TableHead>
             <TableHead>Handphone</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Actions</TableHead>
@@ -125,11 +125,10 @@ const UserList: FC<Props> = ({ users, query }) => {
                   </Button>
                 </TableCell>
                 <TableCell>{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.divisi?.name || 'N/A'}</TableCell>
-                <TableCell>{user.roles?.flatMap((r) => r.name)?.join(', ')}</TableCell>
                 <TableCell>{user.nik}</TableCell>
-                <TableCell>{user.alamat}</TableCell>
+                <TableCell>{user.divisi?.name || 'N/A'}</TableCell>
+                <TableCell>{user.roles?.flatMap((r) => capitalizeWords(r.name))}</TableCell>
+                <TableCell>{user.jenis_kelamin}</TableCell>
                 <TableCell>{user.no_telp}</TableCell>
                 <TableCell>{user.status}</TableCell>
                 <TableCell>

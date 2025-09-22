@@ -22,7 +22,7 @@ class UserController extends Controller
         $this->pass('index user');
 
         $data = User::query()
-            ->with(['media', 'roles', 'divisis'])
+            ->with(['media', 'roles', 'divisi'])
             ->when($request->name, function($q, $v) {
                 $q->where('name', $v);
             });
@@ -43,7 +43,9 @@ class UserController extends Controller
         $this->pass('create user');
 
         $data = $request->validated();
-        User::create($data);
+        $user = User::create($data);
+
+        $user->syncRoles($data['roles']);
     }
 
     /**

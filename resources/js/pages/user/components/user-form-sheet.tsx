@@ -2,7 +2,6 @@ import FormControl from '@/components/form-control';
 import SubmitButton from '@/components/submit-button';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogClose,
@@ -14,10 +13,10 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { capitalizeWords, em } from '@/lib/utils';
 import { FormPurpose } from '@/types';
 import { Divisi } from '@/types/divisi';
@@ -38,22 +37,35 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
   const { divisis } = usePage<{ divisis: Divisi[] }>().props;
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [popoverOpen, setPopoverOpen] = useState(false);
-  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [tglMasukOpen, setTglMasukOpen] = useState(false);
+  const [tglLahirOpen, setTglLahirOpen] = useState(false);
+  const [tglMasuk, setTglMasuk] = useState<Date | undefined>(user?.tgl_masuk ? new Date(user.tgl_masuk) : undefined);
+  const [tglLahir, setTglLahir] = useState<Date | undefined>(user?.tgl_lahir ? new Date(user.tgl_lahir) : undefined);
 
   const { data, setData, put, post, reset, processing } = useForm({
     name: user?.name ?? '',
     email: user?.email ?? '',
-    divisi: user?.divisi?.id.toString() ?? '',
+    divisi_id: user?.divisi?.id ?? '',
+    nik: user?.nik ?? '',
+    tgl_lahir: user?.tgl_lahir ?? '',
+    alamat: user?.alamat ?? '',
+    no_telp: user?.no_telp ?? '',
+    jenis_kelamin: user?.jenis_kelamin ?? '',
     tgl_masuk: user?.tgl_masuk ?? '',
+    status: user?.status ?? 'Aktif',
     password: user ? undefined : '',
     password_confirmation: user ? undefined : '',
-    roles: user?.roles?.flatMap((r) => r.name) ?? [],
+    roles: user?.roles?.map((r) => r.name) ?? [],
   });
 
   React.useEffect(() => {
-    if (user?.tgl_masuk) {
-      setDate(new Date(user.tgl_masuk));
+    if (user) {
+      if (user?.tgl_masuk) {
+        setTglMasuk(new Date(user.tgl_masuk));
+      }
+      if (user?.tgl_lahir) {
+        setTglLahir(new Date(user.tgl_lahir));
+      }
     }
   }, [user]);
 
@@ -89,57 +101,130 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
         </DialogHeader>
         <ScrollArea className="flex-1 overflow-y-auto">
           <form
-            className="space-y-6 px-4"
+            className="space-y-3.5 px-4"
             onSubmit={(e) => {
               e.preventDefault();
               handleSubmit();
             }}
           >
-            <FormControl label="Nama user">
+            <FormControl label="Nama karyawan">
               <Input type="text" placeholder="Name" value={data.name} onChange={(e) => setData('name', e.target.value)} />
             </FormControl>
-            <FormControl label="Email address">
-              <Input type="email" placeholder="username@domain.com" value={data.email} onChange={(e) => setData('email', e.target.value)} />
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <FormControl label="Email address">
+                <Input type="email" placeholder="username@domain.com" value={data.email} onChange={(e) => setData('email', e.target.value)} />
+              </FormControl>
+              <FormControl label="Handphone">
+                <Input type="text" placeholder="08xxxxxxxxxx" value={data.no_telp} onChange={(e) => setData('no_telp', e.target.value)} />
+              </FormControl>
+            </div>
+
+            <FormControl label="Alamat">
+              <Textarea placeholder="Alamat" value={data.alamat ?? ''} onChange={(e) => setData('alamat', e.target.value)} />
             </FormControl>
-            <FormControl label="Divisi">
-              <Select value={data.divisi.toString()} onValueChange={(value) => setData('divisi', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih Divisi" />
-                </SelectTrigger>
-                <SelectContent>
-                  {divisis.map((divisi) => (
-                    <SelectItem key={divisi.id} value={divisi.id.toString()}>
-                      {divisi.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormControl>
-            <FormControl label="Tanggal masuk">
-              <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" id="date" className="w-48 justify-between font-normal">
-                    {date ? date.toLocaleDateString() : 'Select date'}
-                    <ChevronDownIcon />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    captionLayout="dropdown"
-                    onSelect={(date) => {
-                      setDate(date);
-                      setPopoverOpen(false);
-                      if (date) {
-                        const formatted = date.toISOString().split('T')[0];
-                        setData('tgl_masuk', formatted);
-                      }
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
-            </FormControl>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <FormControl label="NIK (Nomor Induk Karyawan)">
+                <Input type="text" placeholder="NIK" value={data.nik} onChange={(e) => setData('nik', e.target.value)} />
+              </FormControl>
+              <FormControl label="Jenis kelamin">
+                <Select value={data.jenis_kelamin ?? ''} onValueChange={(value: 'Laki-laki' | 'Perempuan' | '') => setData('jenis_kelamin', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih jenis kelamin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                    <SelectItem value="Perempuan">Perempuan</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <FormControl label="Divisi">
+                <Select value={data.divisi_id.toString()} onValueChange={(value) => setData('divisi_id', Number(value))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih Divisi" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {divisis.map((divisi) => (
+                      <SelectItem key={divisi.id} value={divisi.id.toString()}>
+                        {divisi.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormControl label="Jabatan">
+                <Select value={data.roles?.[0] ?? ''} onValueChange={(value) => setData('roles', [value])}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih Jabatan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.map((r) => (
+                      <SelectItem key={r.id} value={r.name}>
+                        {r.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormControl>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <FormControl label="Tanggal lahir">
+                <Popover open={tglLahirOpen} onOpenChange={setTglLahirOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" id="date" className="w-48 justify-between font-normal">
+                      {tglLahir ? tglLahir.toLocaleDateString() : 'Select date'}
+                      <ChevronDownIcon />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={tglLahir}
+                      captionLayout="dropdown"
+                      onSelect={(date) => {
+                        setTglLahir(date);
+                        setTglLahirOpen(false);
+                        if (date) {
+                          const formatted = date.toISOString().split('T')[0];
+                          setData('tgl_lahir', formatted);
+                        }
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </FormControl>
+              <FormControl label="Tanggal masuk">
+                <Popover open={tglMasukOpen} onOpenChange={setTglMasukOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" id="date" className="w-48 justify-between font-normal">
+                      {tglMasuk ? tglMasuk.toLocaleDateString() : 'Select date'}
+                      <ChevronDownIcon />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={tglMasuk}
+                      captionLayout="dropdown"
+                      onSelect={(date) => {
+                        setTglMasuk(date);
+                        setTglMasukOpen(false);
+                        if (date) {
+                          const formatted = date.toISOString().split('T')[0];
+                          setData('tgl_masuk', formatted);
+                        }
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </FormControl>
+            </div>
+
             {purpose == 'create' && (
               <>
                 <FormControl label="Password">
@@ -155,19 +240,21 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
                 </FormControl>
               </>
             )}
-            <FormControl label="Select role">
-              <div className="flex flex-row flex-wrap gap-2">
-                {roles.map((r) => (
-                  <Label key={r.id} className="flex h-8 items-center gap-2">
-                    <Checkbox
-                      checked={data.roles?.includes(r.name)}
-                      onCheckedChange={(c) => setData('roles', c ? [...data.roles, r.name] : data.roles.filter((role) => role !== r.name))}
-                    />
-                    {r.name}
-                  </Label>
-                ))}
-              </div>
-            </FormControl>
+            {purpose == 'edit' && (
+              <>
+                <FormControl label="Status">
+                  <Select value={data.status.toString()} onValueChange={(value: 'Aktif' | 'Tidak Aktif') => setData('status', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Aktif">Aktif</SelectItem>
+                      <SelectItem value="Tidak Aktif">Tidak Aktif</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+              </>
+            )}
           </form>
         </ScrollArea>
         <DialogFooter>

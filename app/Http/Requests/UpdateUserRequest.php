@@ -26,7 +26,32 @@ class UpdateUserRequest extends FormRequest
             'name' => 'nullable',
             'email' => 'nullable|email|unique:users,email,'.$this->user->id,
             'roles' => 'nullable|array',
-            'roles.*' => 'exists:roles,name'
+            'roles.*' => 'exists:roles,name',
+            'alamat' => 'nullable|string',
+            'no_telp' => 'nullable|string',
+            'divisi_id' => 'nullable|exists:divisis,id',
+            'nik' => 'nullable|string|max:8',
+            'tgl_lahir' => 'nullable|date',
+            'tgl_masuk' => 'nullable|date',
+            'jenis_kelamin' => 'nullable|in:Laki-laki,Perempuan',
+            'status' => 'nullable|in:Aktif,Tidak Aktif',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Nama wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email sudah digunakan.',
+            'divisi.required' => 'Divisi wajib diisi.',
+            'divisi.exists' => 'Divisi tidak ditemukan.',
+            'nik.max' => 'NIK maksimal 8 karakter.',
+            'tgl_lahir.date' => 'Tanggal lahir tidak valid.',
+            'tgl_masuk.date' => 'Tanggal masuk tidak valid.',
+            'jenis_kelamin.in' => 'Jenis kelamin harus Laki-laki atau Perempuan.',
+            'status.in' => 'Status harus Aktif atau Tidak Aktif.',
         ];
     }
 }
