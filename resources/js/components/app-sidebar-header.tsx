@@ -1,7 +1,7 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
-import ThemeToggler from './theme-toggler';
+import { NavUser } from './nav-user';
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
   return (
@@ -12,7 +12,9 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
           <Breadcrumbs breadcrumbs={breadcrumbs} />
         </div>
 
-        <ThemeToggler />
+        <div>
+          <NavUser />
+        </div>
       </div>
     </header>
   );

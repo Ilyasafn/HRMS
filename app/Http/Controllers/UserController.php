@@ -55,6 +55,8 @@ class UserController extends Controller
     {
         $this->pass('show user');
 
+        $user->load(['roles', 'divisi']);
+
         return Inertia::render('user/show', [
             'user' => $user
         ]);

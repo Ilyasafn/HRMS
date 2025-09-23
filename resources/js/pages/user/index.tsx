@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import StatusBadge from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { capitalizeWords } from '@/lib/utils';
@@ -27,6 +28,16 @@ const UserList: FC<Props> = ({ users, query }) => {
 
   return (
     <AppLayout
+      breadcrumbs={[
+        {
+          title: 'Dashboard',
+          href: '/dashboard',
+        },
+        {
+          title: 'Karyawan',
+          href: route('user.index'),
+        },
+      ]}
       title="Users"
       description="Manage your users"
       actions={
@@ -93,6 +104,7 @@ const UserList: FC<Props> = ({ users, query }) => {
                 </Label>
               </Button>
             </TableHead>
+            <TableHead>No</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Nik</TableHead>
             <TableHead>Divisi</TableHead>
@@ -106,7 +118,7 @@ const UserList: FC<Props> = ({ users, query }) => {
         <TableBody>
           {users
             .filter((user) => JSON.stringify(user).toLowerCase().includes(cari.toLowerCase()))
-            .map((user) => (
+            .map((user, i) => (
               <TableRow key={user.id}>
                 <TableCell>
                   <Button variant={'ghost'} size={'icon'} asChild>
@@ -124,13 +136,16 @@ const UserList: FC<Props> = ({ users, query }) => {
                     </Label>
                   </Button>
                 </TableCell>
+                <TableCell>{i + 1}</TableCell>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.nik}</TableCell>
                 <TableCell>{user.divisi?.name || 'N/A'}</TableCell>
                 <TableCell>{user.roles?.flatMap((r) => capitalizeWords(r.name))}</TableCell>
                 <TableCell>{user.jenis_kelamin}</TableCell>
                 <TableCell>{user.no_telp}</TableCell>
-                <TableCell>{user.status}</TableCell>
+                <TableCell>
+                  <StatusBadge status={user.status} />
+                </TableCell>
                 <TableCell>
                   <Button variant={'ghost'} size={'icon'}>
                     <Link href={route('user.show', user.id)}>

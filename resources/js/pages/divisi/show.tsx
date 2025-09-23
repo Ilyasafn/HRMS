@@ -1,9 +1,12 @@
+import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import StatusBadge from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { Divisi } from '@/types/divisi';
 import { User } from '@/types/user';
+import { Link } from '@inertiajs/react';
+import { Folder } from 'lucide-react';
 import { FC } from 'react';
 
 type Props = {
@@ -48,6 +51,7 @@ const ShowDivisi: FC<Props> = ({ divisi, users }) => {
             <TableHead>Jenis Kelamin</TableHead>
             <TableHead>No. Telepon</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -62,6 +66,13 @@ const ShowDivisi: FC<Props> = ({ divisi, users }) => {
                 <TableCell>{user.no_telp}</TableCell>
                 <TableCell>
                   <StatusBadge status={user.status} />
+                </TableCell>
+                <TableCell>
+                  <Button variant={'ghost'} size={'icon'}>
+                    <Link href={route('user.show', user.id)}>
+                      <Folder />
+                    </Link>
+                  </Button>
                 </TableCell>
               </TableRow>
             ))
