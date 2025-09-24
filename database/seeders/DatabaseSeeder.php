@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             DivisiSeeder::class,
             UserSeeder::class,
+            AbsensiSeeder::class
         ]);
     }
 }

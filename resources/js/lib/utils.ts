@@ -1,7 +1,14 @@
 import { type ClassValue, clsx } from 'clsx';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+// import locale Indonesia
 import dayjs from 'dayjs';
+import 'dayjs/locale/id';
 import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
+
+// Set locale global ke Indonesia
+dayjs.extend(localizedFormat);
+dayjs.locale('id');
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -18,8 +25,8 @@ export function strLimit(text: string = '', limit: number = 50, end: string = '.
   return text.slice(0, limit - end.length) + end;
 }
 
-export function dateDFY(date: string | Date) {
-  return dayjs(date).format('DD MMMM YYYY');
+export function dateDFY(date: string | null) {
+  return dayjs(date).format('dddd, DD MMMM YYYY');
 }
 
 export function handlePasteScreenshot(callback: (file: File) => void) {

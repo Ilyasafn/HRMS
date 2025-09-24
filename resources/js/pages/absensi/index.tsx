@@ -5,23 +5,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { dateDFY } from '@/lib/utils';
 import { SharedData } from '@/types';
-import { Divisi } from '@/types/divisi';
+import { Absensi } from '@/types/absensi';
 import { Link, usePage } from '@inertiajs/react';
-import { Edit, Filter, Folder, FolderArchive, Plus, Trash2 } from 'lucide-react';
+import { Edit, Filter, Folder, FolderArchive, Image, Plus, Trash2 } from 'lucide-react';
 import { FC, useState } from 'react';
-import DivisiBulkDeleteDialog from './components/divisi-bulk-delete-dialog';
-import DivisiBulkEditSheet from './components/divisi-bulk-edit-sheet';
-import DivisiDeleteDialog from './components/divisi-delete-dialog';
-import DivisiFilterSheet from './components/divisi-filter-sheet';
-import DivisiFormSheet from './components/divisi-form-sheet';
+import AbsensiBulkDeleteDialog from './components/absensi-bulk-delete-dialog';
+import AbsensiBulkEditSheet from './components/absensi-bulk-edit-sheet';
+import AbsensiDeleteDialog from './components/absensi-delete-dialog';
+import AbsensiFilterSheet from './components/absensi-filter-sheet';
+import AbsensiFormSheet from './components/absensi-form-sheet';
+import AbsensiUploadMediaSheet from './components/absensi-upload-sheet';
 
 type Props = {
-  divisis: Divisi[];
+  absensis: Absensi[];
   query: { [key: string]: string };
 };
 
-const DivisiList: FC<Props> = ({ divisis, query }) => {
+const AbsensiList: FC<Props> = ({ absensis, query }) => {
   const [ids, setIds] = useState<number[]>([]);
   const [cari, setCari] = useState('');
 
@@ -35,24 +37,24 @@ const DivisiList: FC<Props> = ({ divisis, query }) => {
           href: '/dashboard',
         },
         {
-          title: 'Divisi',
-          href: route('divisi.index'),
+          title: 'Absensi',
+          href: route('absensi.index'),
         },
       ]}
-      title="Divisis"
-      description="Manage your divisis"
+      title="Absensis"
+      description="Manage your absensis"
       actions={
         <>
           {permissions?.canAdd && (
-            <DivisiFormSheet purpose="create">
+            <AbsensiFormSheet purpose="create">
               <Button>
                 <Plus />
-                Create new divisi
+                Create new absensi
               </Button>
-            </DivisiFormSheet>
+            </AbsensiFormSheet>
           )}
           <Button variant={'destructive'} size={'icon'} asChild>
-            <Link href={route('divisi.archived')}>
+            <Link href={route('absensi.archived')}>
               <FolderArchive />
             </Link>
           </Button>
@@ -60,8 +62,8 @@ const DivisiList: FC<Props> = ({ divisis, query }) => {
       }
     >
       <div className="flex gap-2">
-        <Input placeholder="Search divisis..." value={cari} onChange={(e) => setCari(e.target.value)} />
-        <DivisiFilterSheet query={query}>
+        <Input placeholder="Search absensis..." value={cari} onChange={(e) => setCari(e.target.value)} />
+        <AbsensiFilterSheet query={query}>
           <Button>
             <Filter />
             Filter data
@@ -69,22 +71,22 @@ const DivisiList: FC<Props> = ({ divisis, query }) => {
               <Badge variant="secondary">{Object.values(query).filter((val) => val && val !== '').length}</Badge>
             )}
           </Button>
-        </DivisiFilterSheet>
+        </AbsensiFilterSheet>
         {ids.length > 0 && (
           <>
             <Button variant={'ghost'} disabled>
               {ids.length} item selected
             </Button>
-            <DivisiBulkEditSheet divisiIds={ids}>
+            <AbsensiBulkEditSheet absensiIds={ids}>
               <Button>
                 <Edit /> Edit selected
               </Button>
-            </DivisiBulkEditSheet>
-            <DivisiBulkDeleteDialog divisiIds={ids}>
+            </AbsensiBulkEditSheet>
+            <AbsensiBulkDeleteDialog absensiIds={ids}>
               <Button variant={'destructive'}>
                 <Trash2 /> Delete selected
               </Button>
-            </DivisiBulkDeleteDialog>
+            </AbsensiBulkDeleteDialog>
           </>
         )}
       </div>
@@ -95,10 +97,10 @@ const DivisiList: FC<Props> = ({ divisis, query }) => {
               <Button variant={'ghost'} size={'icon'} asChild>
                 <Label>
                   <Checkbox
-                    checked={ids.length === divisis.length}
+                    checked={ids.length === absensis.length}
                     onCheckedChange={(checked) => {
                       if (checked) {
-                        setIds(divisis.map((divisi) => divisi.id));
+                        setIds(absensis.map((absensi) => absensi.id));
                       } else {
                         setIds([]);
                       }
@@ -107,61 +109,60 @@ const DivisiList: FC<Props> = ({ divisis, query }) => {
                 </Label>
               </Button>
             </TableHead>
-            <TableHead>No</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead className="text-center">Jumlah Karyawan</TableHead>
+            <TableHead>Hari / Tanggal</TableHead>
+            <TableHead className="text-center">Jumlah Kehadiran Karyawan</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {divisis
-            .filter((divisi) => JSON.stringify(divisi).toLowerCase().includes(cari.toLowerCase()))
-            .map((divisi, i) => (
-              <TableRow key={divisi.id}>
+          {absensis
+            .filter((absensi) => JSON.stringify(absensi).toLowerCase().includes(cari.toLowerCase()))
+            .map((absensi) => (
+              <TableRow key={absensi.tanggal}>
                 <TableCell>
                   <Button variant={'ghost'} size={'icon'} asChild>
                     <Label>
                       <Checkbox
-                        checked={ids.includes(divisi.id)}
+                        checked={ids.includes(absensi.id)}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            setIds([...ids, divisi.id]);
+                            setIds([...ids, absensi.id]);
                           } else {
-                            setIds(ids.filter((id) => id !== divisi.id));
+                            setIds(ids.filter((id) => id !== absensi.id));
                           }
                         }}
                       />
                     </Label>
                   </Button>
                 </TableCell>
-                <TableCell>{i + 1}</TableCell>
-                <TableCell>{divisi.name}</TableCell>
-                <TableCell>{divisi.description}</TableCell>
-                <TableCell className="text-center">{divisi.users_count ?? 0}</TableCell>
+                <TableCell>{dateDFY(absensi?.tanggal)}</TableCell>
+                <TableCell className="text-center">{absensi?.user_counts ?? 0}</TableCell>
                 <TableCell>
-                  {permissions?.canShow && (
-                    <Button variant={'ghost'} size={'icon'}>
-                      <Link href={route('divisi.show', divisi.id)}>
-                        <Folder />
-                      </Link>
-                    </Button>
-                  )}
+                  <Button variant={'ghost'} size={'icon'}>
+                    <Link href={route('absensi.show', { tanggal: String(absensi.tanggal) })}>
+                      <Folder />
+                    </Link>
+                  </Button>
                   {permissions?.canUpdate && (
                     <>
-                      <DivisiFormSheet purpose="edit" divisi={divisi}>
+                      <AbsensiUploadMediaSheet absensi={absensi}>
+                        <Button variant={'ghost'} size={'icon'}>
+                          <Image />
+                        </Button>
+                      </AbsensiUploadMediaSheet>
+                      <AbsensiFormSheet purpose="edit" absensi={absensi}>
                         <Button variant={'ghost'} size={'icon'}>
                           <Edit />
                         </Button>
-                      </DivisiFormSheet>
+                      </AbsensiFormSheet>
                     </>
                   )}
                   {permissions?.canDelete && (
-                    <DivisiDeleteDialog divisi={divisi}>
+                    <AbsensiDeleteDialog absensi={absensi}>
                       <Button variant={'ghost'} size={'icon'}>
                         <Trash2 />
                       </Button>
-                    </DivisiDeleteDialog>
+                    </AbsensiDeleteDialog>
                   )}
                 </TableCell>
               </TableRow>
@@ -172,4 +173,4 @@ const DivisiList: FC<Props> = ({ divisis, query }) => {
   );
 };
 
-export default DivisiList;
+export default AbsensiList;

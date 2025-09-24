@@ -78,4 +78,8 @@ class User extends Authenticatable implements HasMedia
     {
         return $this->belongsTo(Divisi::class);
     }
+
+    public function absensis(){
+        return $this->hasMany(Absensi::class, 'user_id');
+    }
 }
