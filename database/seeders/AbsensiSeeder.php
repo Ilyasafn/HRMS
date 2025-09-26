@@ -20,7 +20,7 @@ class AbsensiSeeder extends Seeder
             $status = $checkin->gt(Carbon::createFromTime(9, 0)) ? 'Telat' : 'Hadir';
             Absensi::updateOrCreate([
                 'user_id' => $user->id,
-                'tanggal' => $today++,
+                'tanggal' => $today,
             ],
             [
                 'jam_masuk' => $checkin->format('H:i:s'), // random time pagi

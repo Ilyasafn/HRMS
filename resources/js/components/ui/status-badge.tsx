@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 
 type Props = {
-  status: string;
+  status: string ;
 };
 
 const StatusBadge = ({ status }: Props) => {

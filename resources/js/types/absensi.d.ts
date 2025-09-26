@@ -12,9 +12,9 @@ export type Absensi = {
   media: Media[];
   jam_keluar: string | null;
   media: Media[];
-  status: string;
+  status: string | null;
   media: Media[];
-  keterangan: string;
+  keterangan: string | null;
   media: Media[];
   approval_status: string;
   media: Media[];

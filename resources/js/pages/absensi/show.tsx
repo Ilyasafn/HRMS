@@ -5,9 +5,9 @@ import AppLayout from '@/layouts/app-layout';
 import { dateDFY } from '@/lib/utils';
 import { Absensi } from '@/types/absensi';
 import { User } from '@/types/user';
-import { Link } from '@inertiajs/react';
-import { Folder } from 'lucide-react';
+import { Folder, FolderClock } from 'lucide-react';
 import { FC } from 'react';
+import AbsensiApprovalStatusDialog from './components/absensi-approval-status-dialog';
 
 type Props = {
   absensis: Absensi[];
@@ -62,11 +62,11 @@ const ShowAbsensi: FC<Props> = ({ absensis }) => {
                 <StatusBadge status={absensi.approval_status} />
               </TableCell>
               <TableCell>
-                <Button variant={'ghost'} size={'icon'}>
-                  <Link>
-                    <Folder />
-                  </Link>
-                </Button>
+                <AbsensiApprovalStatusDialog absensi={absensi}>
+                  <Button variant={'ghost'} size={'icon'}>
+                    {absensi?.approval_status === 'Pending' ? <FolderClock /> : <Folder />}
+                  </Button>
+                </AbsensiApprovalStatusDialog>
               </TableCell>
             </TableRow>
           ))}

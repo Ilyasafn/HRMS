@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Requests\UploadAbsensiMediaRequest;
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class AbsensiController extends Controller
 {
@@ -95,6 +97,80 @@ class AbsensiController extends Controller
 
         $data = $request->validated();
         $absensi->update($data);
+    }
+
+    public function approval(Request $request, Absensi $absensi)
+    {
+        $this->pass("update absensi");
+
+        $validated = $request->validate([
+            'approval_status' => 'required|in:Approved,Rejected',
+        ]);
+
+        $absensi->update([
+            'approval_status' => $validated['approval_status'],
+            'approved_by' => $this->user->id,
+        ]);
+
+        return redirect()->back()->with('success', 'Absensi approved');
+    }
+
+    public function handleAbsensi(Request $request)
+    {
+        // $this->pass('create/update absensi');
+
+        $userId = Auth::id();
+        $today = Carbon::today();
+        $now = Carbon::now();
+
+
+        $absensi = Absensi::where('user_id', $userId)
+        ->whereDate('tanggal', $today)
+        ->first();
+
+        if(!$absensi) {
+            $status = $this->determineStatusMasuk($now);
+
+            $newAbsensi = Absensi::create([
+                'user_id' => $userId,
+                'tanggal' => $today,
+                'jam_masuk' => $now->format('H:i:s'),
+                'jam_keluar' => null,
+                'status' => $status,
+                'approval_status' => "Pending",
+            ]);
+
+            return redirect()->back()->with('success', 'Check-In Berhasil' . $status);
+        }
+
+        if(is_null($absensi->jam_keluar)){
+            $absensi->update([
+                'jam_keluar' => $now->format('H:i:s'),
+            ]);
+
+            return redirect()->back()->with('success', 'Check-Out Berhasil');
+        }
+
+        return redirect()->back()->with('error', 'Anda sudah melakukan absensi hari ini!');
+    }
+
+    private function determineStatusMasuk(Carbon $waktuMasuk)
+    {
+       $jamMasukStandard = Carbon::createFromTimeString(
+        config('absensi.jam_kerja.masuk', '08:00:00')
+       );
+
+       $toleransiMenit = config('absensi.toleransi_masuk', 15);
+
+       $batasToleransi = $jamMasukStandard->copy()->addMinutes($toleransiMenit);
+
+       $waktuMasukTime = Carbon::createFromTimeString($waktuMasuk->format('H:i:s'));
+
+       if($waktuMasukTime->lessThanOrEqualTo($batasToleransi)) {
+        return 'Hadir';
+       } else {
+        return 'Telat';
+       }
     }
 
     /**

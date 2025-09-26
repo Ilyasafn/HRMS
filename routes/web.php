@@ -37,7 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('divisi/{divisi}/restore', [DivisiController::class, 'restore'])->name('divisi.restore');
     Route::delete('divisi/{divisi}/force-delete', [DivisiController::class, 'forceDelete'])->name('divisi.force-delete');
     Route::apiResource('divisi', DivisiController::class);
-    Route::get('absensi', [AbsensiController::class, 'index'])->name('absensi.index');
+    Route::get('absensi', action: [AbsensiController::class, 'index'])->name('absensi.index');
     Route::get('absensi/{tanggal}', [AbsensiController::class, 'show'])->name('absensi.show');
     Route::put('absensi/bulk', [AbsensiController::class, 'bulkUpdate'])->name('absensi.bulk.update');
     Route::delete('absensi/bulk', [AbsensiController::class, 'bulkDelete'])->name('absensi.bulk.destroy');
@@ -45,7 +45,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('absensi/{absensi}/restore', [AbsensiController::class, 'restore'])->name('absensi.restore');
     Route::delete('absensi/{absensi}/force-delete', [AbsensiController::class, 'forceDelete'])->name('absensi.force-delete');
     Route::post('absensi/{absensi}/upload-media', [AbsensiController::class, 'uploadMedia'])->name('absensi.upload-media');
-});
+    Route::put('absensi/{absensi}/approval', [AbsensiController::class, 'approval'])->name('absensi.approval');
+    // routes/web.php
+    Route::post('absensi/handle', [AbsensiController::class, 'handleAbsensi'])->name('absensi.handle');
+    });
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
