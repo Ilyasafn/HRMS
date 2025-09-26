@@ -2,14 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Absensi;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        return Inertia::render('dashboard/index');
+
+        $userId = Auth::user()->id;
+        $today = Carbon::now()->format('Y-m-d');
+
+        $absensiToday = Absensi::where('user_id', $userId)
+        ->where('tanggal', $today)
+        ->first();
+
+        return Inertia::render('dashboard/index', [
+            'absensiToday' => $absensiToday
+        ]);
     }
 
     public function documentation()

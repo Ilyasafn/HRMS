@@ -1,8 +1,23 @@
 import AppLayout from '@/layouts/app-layout';
 import { SharedData, type BreadcrumbItem } from '@/types';
 import { usePage } from '@inertiajs/react';
+import AbsensiCard from './widget/absensi-card-widget';
 import DateTimeWidget from './widget/date-time-widget';
 import UserInfoWidget from './widget/user-info-widget';
+
+type Props = {
+  absensiToday?: Absensi;
+};
+
+type Absensi = {
+  id: number;
+  user_id: number;
+  tanggal: string;
+  jam_masuk: string;
+  jam_keluar?: string | null;
+  approval_status: 'Pending' | 'Approved' | 'Rejected';
+  status: 'Hadir' | 'Telat' | 'Sakit' | 'Izin' | 'Cuti' | 'Alpha';
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -11,7 +26,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Dashboard() {
+export default function Dashboard({ absensiToday }: Props) {
   const {
     auth: { roles },
   } = usePage<SharedData>().props;
@@ -22,6 +37,7 @@ export default function Dashboard() {
         <UserInfoWidget />
         <DateTimeWidget />
       </div>
+      <AbsensiCard absensiHariIni={absensiToday} />
     </AppLayout>
   );
 }
