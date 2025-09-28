@@ -122,14 +122,19 @@ class AbsensiController extends Controller
         $userId = Auth::id();
         $today = Carbon::today();
         $now = Carbon::now();
+        $status = $this->determineStatusMasuk($now);
 
 
         $absensi = Absensi::where('user_id', $userId)
         ->whereDate('tanggal', $today)
         ->first();
 
+        if($absensi && in_array($absensi->$status, ['Sakit', 'Izin', 'Lainnya'])) {
+
+            return redirect()->back()->with('error', 'Anda sudah melakukan izin pada hari ini');
+        }
+        
         if(!$absensi) {
-            $status = $this->determineStatusMasuk($now);
 
             $newAbsensi = Absensi::create([
                 'user_id' => $userId,
@@ -151,7 +156,44 @@ class AbsensiController extends Controller
             return redirect()->back()->with('success', 'Check-Out Berhasil');
         }
 
+
         return redirect()->back()->with('error', 'Anda sudah melakukan absensi hari ini!');
+    }
+
+    public function ajukanIzin(Request $request) {
+        $validated = $request->validate([
+            'tanggal' => 'required|date',
+            'tipe' => 'required|in:Sakit,Izin,Lainnya', // Tambah Lainnya
+            'keterangan' => 'required|string|max:500',
+            'jenis_lainnya' => 'required_if:tipe,Lainnya|string|max:100', // Field baru untuk spesifikasi
+        ]);
+
+        $userId = Auth::id();
+        $tanggal = Carbon::parse($validated['tanggal'])->format('Y-m-d');
+
+        $existingAbsensi = Absensi::where('user_id', $userId)
+        ->where('tanggal', $tanggal)
+        ->first();
+
+        if($existingAbsensi){
+            return redirect()->back()->with('error', 'Anda sudah melakukan absensi hari ini!');
+        }
+
+        $keterangan = $validated['tipe'] === 'Lainnya'
+        ? $validated['jenis_lainnya'] . ' - ' . $validated['keterangan']
+        : $validated['keterangan'];
+
+        $absensi = Absensi::create([
+            'user_id' => $userId,
+            'tanggal' => $tanggal,
+            'jam_masuk' => null,
+            'jam_keluar' => null,
+            'status' => $validated['tipe'],
+            'keterangan' => $keterangan,
+            'approval_status' => 'Pending',
+        ]);
+
+        return redirect()->back()->with('success', 'Izin berhasil di ajukan');
     }
 
     private function determineStatusMasuk(Carbon $waktuMasuk)

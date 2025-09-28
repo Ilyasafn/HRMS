@@ -12,13 +12,13 @@ const UserInfoWidget = () => {
 
   return (
     <Card>
-      <div className="flex justify-between">
+      <div className="grid grid-rows-1 justify-between">
         <CardHeader>
           <Avatar className="size-10">
             <AvatarImage src={user.avatar} alt={user.name} />
           </Avatar>
         </CardHeader>
-        <CardHeader className="flex-1 pl-0">
+        <CardHeader className="">
           <CardTitle>{user.name}</CardTitle>
           <CardDescription>{user.email}</CardDescription>
         </CardHeader>

@@ -31,7 +31,7 @@ const StatusBadge = ({ status }: Props) => {
     "bg-slate-200 text-slate-800 border-slate-200";
 
   const label =
-    status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+    status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() || "";
 
   return <Badge className={classes}>{label}</Badge>;
 };

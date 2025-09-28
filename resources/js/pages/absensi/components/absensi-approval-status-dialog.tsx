@@ -44,9 +44,10 @@ const AbsensiApprovalStatusDialog = ({ children, absensi }: Props) => {
           </DialogDescription>
         </DialogHeader>
         <div>
-          <DialogDescription>Jam Masuk: {absensi.jam_masuk}</DialogDescription>
-          <DialogDescription>Jam Keluar: {absensi.jam_keluar}</DialogDescription>
+          <DialogDescription>Jam Masuk: {absensi.jam_masuk || '-'}</DialogDescription>
+          <DialogDescription>Jam Keluar: {absensi.jam_keluar || '-'}</DialogDescription>
           <DialogDescription>Status: {absensi.status}</DialogDescription>
+          <DialogDescription>Keterangan: {absensi.keterangan}</DialogDescription>
         </div>
         <DialogFooter>
           <Button className="border-red-200 bg-red-200 text-red-800" size={'sm'} disabled={loading} onClick={() => handleApproval('Rejected')}>

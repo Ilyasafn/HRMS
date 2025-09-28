@@ -14,7 +14,7 @@ return new class extends Migration
             $table->date('tanggal');
             $table->time('jam_masuk')->nullable();
             $table->time('jam_keluar')->nullable();
-            $table->enum('status', ["Hadir", "Telat", "Sakit", "Izin", "Cuti", "Alpha"])->nullable();
+            $table->enum('status', ["Hadir", "Telat", "Sakit", "Izin", "Cuti", "Alpha", 'Lainnya'])->nullable();
             $table->string('keterangan')->nullable();
             $table->enum('approval_status', ["Pending", "Approved", "Rejected"])->nullable();
             $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();

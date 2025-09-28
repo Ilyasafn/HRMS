@@ -48,6 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('absensi/{absensi}/approval', [AbsensiController::class, 'approval'])->name('absensi.approval');
     // routes/web.php
     Route::post('absensi/handle', [AbsensiController::class, 'handleAbsensi'])->name('absensi.handle');
+    Route::post('absensi/ajukan-izin', [AbsensiController::class, 'ajukanIzin'])->name('absensi.ajukan-izin');
     });
 
 require __DIR__.'/settings.php';

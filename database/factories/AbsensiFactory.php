@@ -17,7 +17,7 @@ class AbsensiFactory extends Factory
             'tanggal' => fake()->dateTimeBetween('now', '+1 month'),
             'jam_masuk' => fake()->time(),
             'jam_keluar' => fake()->time(),
-            'status' => fake()->randomElement(['Hadir', 'Telat', 'Sakit', 'Izin', 'Cuti', 'Alpha']),
+            'status' => fake()->randomElement(['Hadir', 'Telat', 'Sakit', 'Izin', 'Cuti', 'Alpha', 'Lainnya']),
             'keterangan' => fake()->sentence(),
             'approval_status' => fake()->randomElement(['Pending', 'Approved', 'Rejected']),
             'approved_by' => User::pluck('id')->random(),

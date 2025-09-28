@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import StatusBadge from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
@@ -42,6 +43,7 @@ const ShowAbsensi: FC<Props> = ({ absensis }) => {
             <TableHead>Jam Masuk</TableHead>
             <TableHead>Jam Keluar</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Keterangan</TableHead>
             <TableHead>Disetujui Oleh</TableHead>
             <TableHead>Approval Status</TableHead>
             <TableHead>Action</TableHead>
@@ -52,11 +54,27 @@ const ShowAbsensi: FC<Props> = ({ absensis }) => {
             <TableRow key={absensi.id}>
               <TableCell>{i + 1}</TableCell>
               <TableCell>{absensi.user?.name}</TableCell>
-              <TableCell>{absensi.jam_masuk}</TableCell>
-              <TableCell>{absensi.jam_keluar}</TableCell>
+              <TableCell>{absensi.jam_masuk || '-'}</TableCell>
+              <TableCell>{absensi.jam_keluar || '-'}</TableCell>
               <TableCell>
-                <StatusBadge status={absensi.status} />
+                <StatusBadge status={absensi.status || ''} />
               </TableCell>
+              <HoverCard>
+                <TableCell>
+                  <HoverCardTrigger className="line-clamp-1 w-40">{absensi.keterangan || '-'}</HoverCardTrigger>
+                  <HoverCardContent className="min-w-fit">
+                    <div className="flex justify-between gap-4">
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-semibold">
+                          <StatusBadge status={absensi.status || ''} />
+                        </h4>
+                        <p className="line-clamp-3">{absensi?.keterangan}</p>
+                        <div className="text-xs text-muted-foreground">Joined December 2021</div>
+                      </div>
+                    </div>
+                  </HoverCardContent>
+                </TableCell>
+              </HoverCard>
               <TableCell>{(absensi.approval_status !== 'Pending' && absensi.approved_by?.name) || '-'}</TableCell>
               <TableCell>
                 <StatusBadge status={absensi.approval_status} />
