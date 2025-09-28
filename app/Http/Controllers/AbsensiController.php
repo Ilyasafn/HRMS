@@ -206,9 +206,7 @@ class AbsensiController extends Controller
         ->first();
 
         if($existingAbsensi){
-            return response()->json([
-            'message' => 'Anda sudah melakukan absensi hari ini!'
-        ], 422);
+            return redirect()->back()->with('error', 'Anda sudah melakukan izin pada hari ini');
         }
         
 
@@ -226,10 +224,8 @@ class AbsensiController extends Controller
             'approval_status' => 'Pending',
         ]);
 
-        return response()->json([
-        'message' => 'Izin berhasil diajukan',
-        'data' => $absensi
-    ], 201);
+        return redirect()->back()->with('success', 'Anda telah mengajukan izin');
+
     }
 
     private function determineStatusMasuk(Carbon $waktuMasuk)
