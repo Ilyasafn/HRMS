@@ -76,7 +76,6 @@ export default function AbsensiCard({ absensiHariIni }: AbsensiCardProps) {
     const day = String(selectedDate.getDate()).padStart(2, '0');
 
     const formattedDate = `${year}-${month}-${day}`;
-    console.log('Tanggal dikirim:', formattedDate); // Debug
 
     if (izinForm.tipe === 'Lainnya' && !izinForm.jenis_lainnya.trim()) {
       alert('Harap isi jenis izin untuk opsi Lainnya');
