@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FC } from 'react';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Absensi } from '@/types/absensi';
+import { FC } from 'react';
 
 type Props = {
   absensi: Absensi;
@@ -11,10 +11,8 @@ const AbsensiItemCard: FC<Props> = ({ absensi, className }) => {
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>{ absensi.name }</CardTitle>
-        <CardDescription>
-            ID: { absensi.id }
-        </CardDescription>
+        <CardTitle>{absensi.name}</CardTitle>
+        <CardDescription>ID: {absensi.id}</CardDescription>
       </CardHeader>
     </Card>
   );

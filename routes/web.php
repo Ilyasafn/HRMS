@@ -28,28 +28,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::apiResource('user', UserController::class);
 
     Route::apiResource('role', RoleController::class);
+
     Route::post('permission/resync', [PermissionController::class, 'resync'])->name('permission.resync');
     Route::apiResource('permission', PermissionController::class);
+
     Route::apiResource('doc', MediaController::class);
-    Route::put('divisi/bulk', [DivisiController::class, 'bulkUpdate'])->name('divisi.bulk.update');
+
+    Route::put('/bulk', [DivisiController::class, 'bulkUpdate'])->name('divisi.bulk.update');
     Route::delete('divisi/bulk', [DivisiController::class, 'bulkDelete'])->name('divisi.bulk.destroy');
     Route::get('divisi/archived', [DivisiController::class, 'archived'])->name('divisi.archived');
     Route::put('divisi/{divisi}/restore', [DivisiController::class, 'restore'])->name('divisi.restore');
     Route::delete('divisi/{divisi}/force-delete', [DivisiController::class, 'forceDelete'])->name('divisi.force-delete');
     Route::apiResource('divisi', DivisiController::class);
-    Route::get('absensi', action: [AbsensiController::class, 'index'])->name('absensi.index');
-    Route::get('absensi/{tanggal}', [AbsensiController::class, 'show'])->name('absensi.show');
+    
     Route::put('absensi/bulk', [AbsensiController::class, 'bulkUpdate'])->name('absensi.bulk.update');
     Route::delete('absensi/bulk', [AbsensiController::class, 'bulkDelete'])->name('absensi.bulk.destroy');
     Route::get('absensi/archived', [AbsensiController::class, 'archived'])->name('absensi.archived');
     Route::put('absensi/{absensi}/restore', [AbsensiController::class, 'restore'])->name('absensi.restore');
     Route::delete('absensi/{absensi}/force-delete', [AbsensiController::class, 'forceDelete'])->name('absensi.force-delete');
     Route::post('absensi/{absensi}/upload-media', [AbsensiController::class, 'uploadMedia'])->name('absensi.upload-media');
-    Route::put('absensi/{absensi}/approval', [AbsensiController::class, 'approval'])->name('absensi.approval');
-    // routes/web.php
     Route::post('absensi/handle', [AbsensiController::class, 'handleAbsensi'])->name('absensi.handle');
     Route::post('absensi/ajukan-izin', [AbsensiController::class, 'ajukanIzin'])->name('absensi.ajukan-izin');
-    });
+    Route::put('absensi/{absensi}/approval', [AbsensiController::class, 'approval'])->name('absensi.approval');
+    Route::apiResource('absensi', AbsensiController::class);
+    Route::get('absensi/{tanggal}', [AbsensiController::class, 'show'])->name('absensi.show');
+});
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

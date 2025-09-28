@@ -12,6 +12,7 @@ import { dateDFY } from '@/lib/utils';
 import { router } from '@inertiajs/react';
 import { AlertCircle, Calendar as CalendarIcon, CheckCircle, Clock, MoreHorizontal, Plus, Stethoscope, UserCheck } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 type Absensi = {
   id: number;
@@ -38,7 +39,7 @@ type IzinForm = {
 export default function AbsensiCard({ absensiHariIni }: AbsensiCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const [izinForm, setIzinForm] = useState<IzinForm>({
     tanggal: new Date().toISOString().split('T')[0],
@@ -65,6 +66,18 @@ export default function AbsensiCard({ absensiHariIni }: AbsensiCardProps) {
 
   // Handle pengajuan izin
   const handleAjukanIzin = async () => {
+    if (!selectedDate) {
+      toast.error('Pilih tanggal terlebih dahulu');
+      return;
+    }
+
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(selectedDate.getDate()).padStart(2, '0');
+
+    const formattedDate = `${year}-${month}-${day}`;
+    console.log('Tanggal dikirim:', formattedDate); // Debug
+
     if (izinForm.tipe === 'Lainnya' && !izinForm.jenis_lainnya.trim()) {
       alert('Harap isi jenis izin untuk opsi Lainnya');
       return;
@@ -95,7 +108,7 @@ export default function AbsensiCard({ absensiHariIni }: AbsensiCardProps) {
         const today = new Date();
         setSelectedDate(today);
         setIzinForm({
-          tanggal: today.toISOString().split('T')[0],
+          tanggal: formattedDate,
           tipe: 'Izin',
           jenis_lainnya: '',
           keterangan: '',
@@ -300,6 +313,16 @@ export default function AbsensiCard({ absensiHariIni }: AbsensiCardProps) {
                         day: 'numeric',
                       })}
                     </Button>
+                    <Input
+                      type="hidden"
+                      value={selectedDate ? selectedDate.toISOString().split('T')[0] : ''}
+                      onChange={(e) => {
+                        // Update selectedDate ketika value berubah
+                        if (e.target.value) {
+                          setSelectedDate(new Date(e.target.value));
+                        }
+                      }}
+                    />
                   </div>
                 </div>
 

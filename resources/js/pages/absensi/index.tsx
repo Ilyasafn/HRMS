@@ -8,22 +8,22 @@ import AppLayout from '@/layouts/app-layout';
 import { dateDFY } from '@/lib/utils';
 import { SharedData } from '@/types';
 import { Absensi } from '@/types/absensi';
+import { User } from '@/types/user';
 import { Link, usePage } from '@inertiajs/react';
-import { Edit, Filter, Folder, FolderArchive, Image, Plus, Trash2 } from 'lucide-react';
+import { Edit, Filter, Folder, FolderArchive, Plus, Trash2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import AbsensiBulkDeleteDialog from './components/absensi-bulk-delete-dialog';
 import AbsensiBulkEditSheet from './components/absensi-bulk-edit-sheet';
-import AbsensiDeleteDialog from './components/absensi-delete-dialog';
 import AbsensiFilterSheet from './components/absensi-filter-sheet';
 import AbsensiFormSheet from './components/absensi-form-sheet';
-import AbsensiUploadMediaSheet from './components/absensi-upload-sheet';
 
 type Props = {
   absensis: Absensi[];
+  users: User[];
   query: { [key: string]: string };
 };
 
-const AbsensiList: FC<Props> = ({ absensis, query }) => {
+const AbsensiList: FC<Props> = ({ absensis, users, query }) => {
   const [ids, setIds] = useState<number[]>([]);
   const [cari, setCari] = useState('');
 
@@ -46,7 +46,7 @@ const AbsensiList: FC<Props> = ({ absensis, query }) => {
       actions={
         <>
           {permissions?.canAdd && (
-            <AbsensiFormSheet purpose="create">
+            <AbsensiFormSheet purpose="create" users={users}>
               <Button>
                 <Plus />
                 Create new absensi
@@ -143,27 +143,6 @@ const AbsensiList: FC<Props> = ({ absensis, query }) => {
                       <Folder />
                     </Link>
                   </Button>
-                  {permissions?.canUpdate && (
-                    <>
-                      <AbsensiUploadMediaSheet absensi={absensi}>
-                        <Button variant={'ghost'} size={'icon'}>
-                          <Image />
-                        </Button>
-                      </AbsensiUploadMediaSheet>
-                      <AbsensiFormSheet purpose="edit" absensi={absensi}>
-                        <Button variant={'ghost'} size={'icon'}>
-                          <Edit />
-                        </Button>
-                      </AbsensiFormSheet>
-                    </>
-                  )}
-                  {permissions?.canDelete && (
-                    <AbsensiDeleteDialog absensi={absensi}>
-                      <Button variant={'ghost'} size={'icon'}>
-                        <Trash2 />
-                      </Button>
-                    </AbsensiDeleteDialog>
-                  )}
                 </TableCell>
               </TableRow>
             ))}

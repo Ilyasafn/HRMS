@@ -57,9 +57,34 @@ class AbsensiController extends Controller
     {
         $this->pass("create absensi");
 
-        $data = $request->validated();
-        Absensi::create($data);
-    }
+        date_default_timezone_set('Asia/Makassar');
+        $validated = $request->validated();
+
+         $tanggal = Carbon::parse($validated['tanggal'] . ' 12:00:00') // Tambah waktu tengah hari
+        ->timezone('Asia/Makassar')
+        ->format('Y-m-d');
+
+        $existingAbsen = Absensi::where('user_id', $validated['user_id'])
+        ->where('tanggal', $validated['tanggal'])
+        ->first();
+
+        if($existingAbsen) {
+            return redirect()->back()->with('error', 'Anda sudah melakukan absensi hari ini');
+        }
+
+        $validated['tanggal'] = $tanggal;
+        $validated['approval_status'] = 'Approved';
+        $validated['approved_by'] = Auth::id();
+        $validated['approved_at'] = now();
+
+        if(in_array($validated['status'], ['Hadir', 'Telat']) && empty($validated['jam_masuk'])) {
+            return redirect()->back()->with('error', 'Jam masuk wajib di-isi untuk status Hadir atau Telat');
+        }
+
+        Absensi::create($validated);
+
+        return redirect()->back()->with('success', 'Absensi berhasil ditambahkan');
+}
 
     /**
      * Display the specified resource.
@@ -81,6 +106,7 @@ class AbsensiController extends Controller
         return Inertia::render('absensi/show', [
             'absensis' => $absensi,
             'tanggal' => $tanggal,
+            'users' => User::all(),
             'permissions' => [
                 'canUpdate' => $this->user->can("update absensi"),
                 'canDelete' => $this->user->can("delete absensi"),
@@ -95,8 +121,11 @@ class AbsensiController extends Controller
     {
         $this->pass("update absensi");
 
-        $data = $request->validated();
-        $absensi->update($data);
+        $validated = $request->validated();
+
+        $absensi->update($validated);
+
+        return redirect()->back()->with('success', 'Absensi berhasil diupdate');
     }
 
     public function approval(Request $request, Absensi $absensi)
@@ -120,7 +149,7 @@ class AbsensiController extends Controller
         // $this->pass('create/update absensi');
 
         $userId = Auth::id();
-        $today = Carbon::today();
+        $today = Carbon::today('Asia/Makassar')->format('Y-m-d');
         $now = Carbon::now();
         $status = $this->determineStatusMasuk($now);
 
@@ -169,15 +198,19 @@ class AbsensiController extends Controller
         ]);
 
         $userId = Auth::id();
-        $tanggal = Carbon::parse($validated['tanggal'])->format('Y-m-d');
+        $tanggal = Carbon::today('Asia/Makassar')->format('Y-m-d');
+
 
         $existingAbsensi = Absensi::where('user_id', $userId)
         ->where('tanggal', $tanggal)
         ->first();
 
         if($existingAbsensi){
-            return redirect()->back()->with('error', 'Anda sudah melakukan absensi hari ini!');
+            return response()->json([
+            'message' => 'Anda sudah melakukan absensi hari ini!'
+        ], 422);
         }
+        
 
         $keterangan = $validated['tipe'] === 'Lainnya'
         ? $validated['jenis_lainnya'] . ' - ' . $validated['keterangan']
@@ -193,7 +226,10 @@ class AbsensiController extends Controller
             'approval_status' => 'Pending',
         ]);
 
-        return redirect()->back()->with('success', 'Izin berhasil di ajukan');
+        return response()->json([
+        'message' => 'Izin berhasil diajukan',
+        'data' => $absensi
+    ], 201);
     }
 
     private function determineStatusMasuk(Carbon $waktuMasuk)
@@ -254,9 +290,17 @@ class AbsensiController extends Controller
     {
         $this->pass("archived absensi");
 
-        return Inertia::render('absensi/archived', [
-            'absensis' => Absensi::onlyTrashed()->get(),
-        ]);
+    $absensis = Absensi::with('user')
+                ->onlyTrashed() // ← PAKE INI, bukan where status
+                ->latest()
+                ->get();
+
+    // Debug
+    logger('Archived absensi count: ' . $absensis->count());
+
+    return inertia('absensi/archived', [
+        'absensis' => $absensis,
+    ]);
     }
 
     /**

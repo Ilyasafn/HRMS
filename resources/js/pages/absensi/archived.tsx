@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import StatusBadge from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { em } from '@/lib/utils';
@@ -41,8 +42,8 @@ const ArchivedAbsensiList: FC<Props> = ({ absensis }) => {
 
   return (
     <AppLayout
-      title="Absensis"
-      description="Manage your absensis"
+      title="Absensi Arsip"
+      description="Manage archived absensi"
       actions={
         <Button variant={'secondary'} asChild>
           <Link href={route('absensi.index')}>
@@ -62,63 +63,86 @@ const ArchivedAbsensiList: FC<Props> = ({ absensis }) => {
           </>
         )}
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>
-              <Button variant={'ghost'} size={'icon'} asChild>
-                <Label>
-                  <Checkbox
-                    checked={ids.length === absensis.length}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setIds(absensis.map((absensi) => absensi.id));
-                      } else {
-                        setIds([]);
-                      }
-                    }}
-                  />
-                </Label>
-              </Button>
-            </TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {absensis
-            .filter((absensi) => JSON.stringify(absensi).toLowerCase().includes(cari.toLowerCase()))
-            .map((absensi) => (
-              <TableRow key={absensi.id}>
-                <TableCell>
-                  <Button variant={'ghost'} size={'icon'} asChild>
-                    <Label>
-                      <Checkbox
-                        checked={ids.includes(absensi.id)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setIds([...ids, absensi.id]);
-                          } else {
-                            setIds(ids.filter((id) => id !== absensi.id));
-                          }
-                        }}
-                      />
-                    </Label>
-                  </Button>
-                </TableCell>
-                <TableCell>{absensi.name}</TableCell>
-                <TableCell>
-                  <Button variant={'ghost'} size={'icon'} onClick={() => handleRestore(absensi.id)}>
-                    <Undo2 />
-                  </Button>
-                  <Button variant={'ghost'} size={'icon'} onClick={() => handleForceDelete(absensi.id)}>
-                    <Trash2 />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-        </TableBody>
-      </Table>
+
+      {/* ADD LOADING/EMPTY STATE */}
+      {!absensis || absensis.length === 0 ? (
+        <div className="py-8 text-center">
+          <p className="text-gray-500">Tidak ada data absensi yang diarsipkan</p>
+        </div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>
+                <Button variant={'ghost'} size={'icon'} asChild>
+                  <Label>
+                    <Checkbox
+                      checked={ids.length === absensis.length}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setIds(absensis.map((absensi) => absensi.id));
+                        } else {
+                          setIds([]);
+                        }
+                      }}
+                    />
+                  </Label>
+                </Button>
+              </TableHead>
+              <TableHead>No</TableHead>
+              <TableHead>Nama Karyawan</TableHead>
+              <TableHead>Tanggal</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Disetujui Oleh</TableHead>
+              <TableHead>Approval Status</TableHead>
+              <TableHead>Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {absensis
+              .filter((absensi) => JSON.stringify(absensi).toLowerCase().includes(cari.toLowerCase()))
+              .map((absensi, i) => (
+                <TableRow key={absensi.id}>
+                  <TableCell>
+                    <Button variant={'ghost'} size={'icon'} asChild>
+                      <Label>
+                        <Checkbox
+                          checked={ids.includes(absensi.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setIds([...ids, absensi.id]);
+                            } else {
+                              setIds(ids.filter((id) => id !== absensi.id));
+                            }
+                          }}
+                        />
+                      </Label>
+                    </Button>
+                  </TableCell>
+                  <TableCell>{i + 1}</TableCell>
+                  <TableCell>{absensi.user?.name}</TableCell>
+                  <TableCell>{absensi.tanggal}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={absensi.status || ''} />
+                  </TableCell>
+
+                  <TableCell>{(absensi.approval_status !== 'Pending' && absensi.approved_by?.name) || '-'}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={absensi.approval_status} />
+                  </TableCell>
+                  <TableCell>
+                    <Button variant={'ghost'} size={'icon'} onClick={() => handleRestore(absensi.id)}>
+                      <Undo2 />
+                    </Button>
+                    <Button variant={'ghost'} size={'icon'} onClick={() => handleForceDelete(absensi.id)}>
+                      <Trash2 />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      )}
     </AppLayout>
   );
 };

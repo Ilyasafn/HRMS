@@ -14,7 +14,6 @@ class UpdateAbsensiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => 'required|exists:users,id',
             'tanggal' => 'nullable',
             'jam_masuk' => 'nullable',
             'jam_keluar' => 'nullable',
@@ -29,9 +28,6 @@ class UpdateAbsensiRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'user_id.required' => 'User ID is required',
-            'user_id.string' => 'User ID must be a string',
-            'user_id.max' => 'User ID must not exceed 255 characters',
             'status.required' => 'Status is required',
             'status.string' => 'Status must be a string',
             'status.max' => 'Status must not exceed 255 characters',

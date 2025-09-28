@@ -4,18 +4,25 @@ import StatusBadge from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { dateDFY } from '@/lib/utils';
+import { SharedData } from '@/types';
 import { Absensi } from '@/types/absensi';
 import { User } from '@/types/user';
-import { Folder, FolderClock } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
+import { Edit, Folder, FolderClock, Image, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import AbsensiApprovalStatusDialog from './components/absensi-approval-status-dialog';
+import AbsensiDeleteDialog from './components/absensi-delete-dialog';
+import AbsensiFormSheet from './components/absensi-form-sheet';
+import AbsensiUploadMediaSheet from './components/absensi-upload-sheet';
 
 type Props = {
   absensis: Absensi[];
   users: User[];
 };
 
-const ShowAbsensi: FC<Props> = ({ absensis }) => {
+const ShowAbsensi: FC<Props> = ({ absensis, users }) => {
+  const { permissions } = usePage<SharedData>().props;
+
   return (
     <AppLayout
       breadcrumbs={[
@@ -85,6 +92,27 @@ const ShowAbsensi: FC<Props> = ({ absensis }) => {
                     {absensi?.approval_status === 'Pending' ? <FolderClock /> : <Folder />}
                   </Button>
                 </AbsensiApprovalStatusDialog>
+                {permissions?.canUpdate && (
+                  <>
+                    <AbsensiUploadMediaSheet absensi={absensi}>
+                      <Button variant={'ghost'} size={'icon'}>
+                        <Image />
+                      </Button>
+                    </AbsensiUploadMediaSheet>
+                    <AbsensiFormSheet purpose="edit" absensi={absensi} users={users}>
+                      <Button variant={'ghost'} size={'icon'}>
+                        <Edit />
+                      </Button>
+                    </AbsensiFormSheet>
+                  </>
+                )}
+                {permissions?.canDelete && (
+                  <AbsensiDeleteDialog absensi={absensi}>
+                    <Button variant={'ghost'} size={'icon'}>
+                      <Trash2 />
+                    </Button>
+                  </AbsensiDeleteDialog>
+                )}
               </TableCell>
             </TableRow>
           ))}
