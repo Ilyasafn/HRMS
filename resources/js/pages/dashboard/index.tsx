@@ -3,6 +3,7 @@ import { SharedData, type BreadcrumbItem } from '@/types';
 import { User } from '@/types/user';
 import { usePage } from '@inertiajs/react';
 import AbsensiCard from './widget/absensi-card-widget';
+import UserInfoWidget from './widget/user-info-widget';
 
 type Props = {
   absensiToday?: Absensi;
@@ -31,6 +32,7 @@ export default function Dashboard({ absensiToday }: Props) {
 
   return (
     <AppLayout title="Dashboard" description={`Selamat datang, ${auth.user?.name}`} breadcrumbs={breadcrumbs}>
+      <UserInfoWidget />
       <AbsensiCard absensiHariIni={absensiToday} />
     </AppLayout>
   );
