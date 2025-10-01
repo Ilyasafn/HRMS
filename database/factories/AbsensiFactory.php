@@ -21,7 +21,7 @@ class AbsensiFactory extends Factory
             'keterangan' => fake()->sentence(),
             'approval_status' => fake()->randomElement(['Pending', 'Approved', 'Rejected']),
             'approved_by' => User::pluck('id')->random(),
-            'approved_at' => fake()->dateTimeBetween('now', '+1 year'),
+            'approved_at' => fake()->dateTimeBetween('now', '+1 day'),
         ];
     }
 }

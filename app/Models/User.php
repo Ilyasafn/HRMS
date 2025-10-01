@@ -82,4 +82,8 @@ class User extends Authenticatable implements HasMedia
     public function absensis(){
         return $this->hasMany(Absensi::class, 'user_id');
     }
+
+    public function cutis(){
+        return $this->hasMany(Cuti::class, 'user_id');
+    }
 }

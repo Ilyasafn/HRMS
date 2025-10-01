@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\DivisiController;
 use App\Http\Controllers\AbsensiController;
+use App\Http\Controllers\CutiController;
+
 
 
 
@@ -20,6 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('documentation', [DashboardController::class, 'documentation'])->name('documentation');
 
+    Route::get('user/{user}', [UserController::class, 'show'])->name('user.show');
     Route::put('user/bulk', [UserController::class, 'bulkUpdate'])->name('user.bulk.update');
     Route::delete('user/bulk', [UserController::class, 'bulkDelete'])->name('user.bulk.destroy');
     Route::get('user/archived', [UserController::class, 'archived'])->name('user.archived');
@@ -52,6 +55,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('absensi/{absensi}/approval', [AbsensiController::class, 'approval'])->name('absensi.approval');
     Route::apiResource('absensi', AbsensiController::class);
     Route::get('absensi/{tanggal}', [AbsensiController::class, 'show'])->name('absensi.show');
+
+    Route::put('cuti/bulk', [CutiController::class, 'bulkUpdate'])->name('cuti.bulk.update');
+    Route::delete('cuti/bulk', [CutiController::class, 'bulkDelete'])->name('cuti.bulk.destroy');
+    Route::get('cuti/archived', [CutiController::class, 'archived'])->name('cuti.archived');
+    Route::put('cuti/{cuti}/restore', [CutiController::class, 'restore'])->name('cuti.restore');
+    Route::delete('cuti/{cuti}/force-delete', [CutiController::class, 'forceDelete'])->name('cuti.force-delete');
+    Route::post('cuti/{cuti}/upload-media', [CutiController::class, 'uploadMedia'])->name('cuti.upload-media');
+    Route::apiResource('cuti', CutiController::class);
 });
 
 require __DIR__.'/settings.php';
