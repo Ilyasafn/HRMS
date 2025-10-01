@@ -3,41 +3,47 @@ import { NavMain } from '@/components/nav-main';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookCheck, Building, Database, KeySquare, LayoutGrid, Users, UserSearch } from 'lucide-react';
+import { BookCheck, BookMarked, Building, Database, KeySquare, LayoutGrid, Users, UserSearch } from 'lucide-react';
 import AppLogo from './app-logo';
-
-const mainNavItems: NavItem[] = [
-  {
-    title: 'Dashboard',
-    href: route('dashboard'),
-    icon: LayoutGrid,
-  },
-  {
-    title: 'Divisi',
-    href: route('divisi.index'),
-    icon: Building,
-  },
-  {
-    title: 'Karyawan',
-    href: route('user.index'),
-    icon: UserSearch,
-  },
-  {
-    title: 'Absensi',
-    href: route('absensi.index'),
-    icon: BookCheck,
-  },
-  {
-    title: 'Documentation',
-    href: route('documentation'),
-    icon: Users,
-  },
-];
 
 const footerNavItems: NavItem[] = [];
 
 export function AppSidebar() {
   const { menus } = usePage<{ menus: Record<string, boolean> }>().props;
+
+  const mainNavItems: NavItem[] = [
+    {
+      title: 'Dashboard',
+      href: route('dashboard'),
+      icon: LayoutGrid,
+    },
+    {
+      title: 'Divisi',
+      href: route('divisi.index'),
+      icon: Building,
+    },
+    {
+      title: 'Karyawan',
+      href: route('user.index'),
+      icon: UserSearch,
+    },
+    {
+      title: 'Absensi',
+      href: route('absensi.index'),
+      icon: BookCheck,
+      available: menus.absensi,
+    },
+    {
+      title: 'Cuti',
+      href: route('cuti.index'),
+      icon: BookMarked,
+    },
+    {
+      title: 'Documentation',
+      href: route('documentation'),
+      icon: Users,
+    },
+  ];
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">

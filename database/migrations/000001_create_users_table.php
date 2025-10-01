@@ -25,6 +25,8 @@ return new class extends Migration
             $table->string('no_telp')->nullable();
             $table->string('tgl_masuk')->nullable();
             $table->enum("status", ["Aktif", "Tidak Aktif"])->default("Aktif");
+            $table->string('sisa_cuti_tahunan')->default(12);
+            $table->string('total_cuti_diambil')->default(0);
 
             $table->rememberToken();
             $table->timestamps();

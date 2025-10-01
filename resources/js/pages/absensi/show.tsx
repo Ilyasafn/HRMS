@@ -68,14 +68,14 @@ const ShowAbsensi: FC<Props> = ({ absensis, users }) => {
               </TableCell>
               <HoverCard>
                 <TableCell>
-                  <HoverCardTrigger className="line-clamp-1 w-40">{absensi.keterangan || '-'}</HoverCardTrigger>
+                  <HoverCardTrigger className="line-clamp-1 truncate w-40">{absensi.keterangan || '-'}</HoverCardTrigger>
                   <HoverCardContent className="min-w-fit">
                     <div className="flex justify-between gap-4">
                       <div className="space-y-1">
                         <h4 className="text-sm font-semibold">
                           <StatusBadge status={absensi.status || ''} />
                         </h4>
-                        <p className="line-clamp-3">{absensi?.keterangan}</p>
+                        <p className="line-clamp-2">{absensi?.keterangan}</p>
                         <div className="text-xs text-muted-foreground">Joined December 2021</div>
                       </div>
                     </div>

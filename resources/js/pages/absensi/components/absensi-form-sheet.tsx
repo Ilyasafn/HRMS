@@ -104,7 +104,7 @@ const AbsensiFormSheet: FC<Props> = ({ children, absensi, purpose, users = [] })
               handleSubmit();
             }}
           >
-            {(purpose === 'create' || purpose === 'duplicate') && users.length > 0 && (
+            {(purpose === 'create' || purpose === 'duplicate') && users?.length > 0 && (
               <FormControl label="Pilih karyawan">
                 <Select value={data.user_id} onValueChange={(value: string) => setData('user_id', value)}>
                   <SelectTrigger className="w-full">
@@ -162,7 +162,7 @@ const AbsensiFormSheet: FC<Props> = ({ children, absensi, purpose, users = [] })
               <FormControl label="Status kehadiran">
                 <Select
                   value={data.status ?? ''}
-                  onValueChange={(value: 'Hadir' | 'Telat' | 'Sakit' | 'Izin' | 'Lainnya') => setData('status', value)}
+                  onValueChange={(value: 'Hadir' | 'Telat' | 'Sakit' | 'Izin' | 'Alpha' | 'Lainnya') => setData('status', value)}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Status" />
@@ -172,6 +172,7 @@ const AbsensiFormSheet: FC<Props> = ({ children, absensi, purpose, users = [] })
                     <SelectItem value="Telat">Telat</SelectItem>
                     <SelectItem value="Sakit">Sakit</SelectItem>
                     <SelectItem value="Izin">Izin</SelectItem>
+                    <SelectItem value="Alpha">Alpha</SelectItem>
                     <SelectItem value="Lainnya">Lainnya</SelectItem>
                   </SelectContent>
                 </Select>
