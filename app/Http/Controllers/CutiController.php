@@ -53,6 +53,10 @@ class CutiController extends Controller
 
         $validated = $request->validated();
 
+        if (empty($validated['tgl_mulai']) || empty($validated['tgl_selesai'])) {
+        return redirect()->back()->with('error', 'Tanggal mulai dan selesai wajib diisi');
+    }
+
         $jumlah_hari = $this->calculateWorkingDays(
         Carbon::parse($validated['tgl_mulai']),
         Carbon::parse($validated['tgl_selesai'])
@@ -83,6 +87,11 @@ class CutiController extends Controller
 
     private function calculateWorkingDays(Carbon $start, Carbon $end): int
     {
+
+        if (!$start || !$end) {
+        return 0;
+        }
+
         $totalDays = 0;
         $current = $start->copy();
         
@@ -97,12 +106,30 @@ class CutiController extends Controller
         return $totalDays;
     }
 
+    public function approval(Request $request, Cuti $cuti)
+    {
+        $this->pass("update cuti");
+
+        $validated = $request->validate([
+            'approval_status' => 'required|in:Approved,Rejected',
+        ]);
+
+        $cuti->update([
+            'approval_status' => $validated['approval_status'],
+            'approved_by' => $this->user->id,
+        ]);
+
+        return redirect()->back()->with('success', 'Cuti approved');
+    }
+
     /**
      * Display the specified resource.
      */
     public function show(Cuti $cuti)
     {
         $this->pass("show cuti");
+        $cuti->load('user');
+
 
         return Inertia::render('cuti/show', [
             'cuti' => $cuti,

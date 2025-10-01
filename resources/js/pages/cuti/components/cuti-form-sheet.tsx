@@ -51,6 +51,26 @@ const CutiFormSheet: FC<Props> = ({ children, cuti, purpose, users = [] }) => {
   });
 
   const handleSubmit = () => {
+    if (!data.tgl_mulai) {
+      toast.error('Tanggal mulai cuti wajib diisi');
+      return;
+    }
+
+    if (!data.tgl_selesai) {
+      toast.error('Tanggal selesai cuti wajib diisi');
+      return;
+    }
+
+    if (!data.jenis_cuti) {
+      toast.error('Jenis cuti wajib dipilih');
+      return;
+    }
+
+    if (!data.alasan) {
+      toast.error('Alasan cuti wajib diisi');
+      return;
+    }
+
     if (purpose === 'create' || purpose === 'duplicate') {
       post(route('cuti.store'), {
         preserveScroll: true,
