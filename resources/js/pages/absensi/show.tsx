@@ -7,8 +7,8 @@ import { dateDFY } from '@/lib/utils';
 import { SharedData } from '@/types';
 import { Absensi } from '@/types/absensi';
 import { User } from '@/types/user';
-import { usePage } from '@inertiajs/react';
-import { Edit, Folder, FolderClock, Image, Trash2 } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { ArrowLeft, Edit, Folder, FolderClock, Image, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import AbsensiApprovalStatusDialog from './components/absensi-approval-status-dialog';
 import AbsensiDeleteDialog from './components/absensi-delete-dialog';
@@ -41,6 +41,16 @@ const ShowAbsensi: FC<Props> = ({ absensis, users }) => {
       ]}
       title={`Detail absensi ${dateDFY(absensis[0]?.tanggal) ?? 'N/A'}`}
       description={`Menampilkan informasi absensi karyawan`}
+      actions={
+        <>
+          <Button asChild variant={'secondary'}>
+            <Link href={route('absensi.index')}>
+              <ArrowLeft />
+              Kembali ke list absensi
+            </Link>
+          </Button>
+        </>
+      }
     >
       <Table>
         <TableHeader>
@@ -68,7 +78,7 @@ const ShowAbsensi: FC<Props> = ({ absensis, users }) => {
               </TableCell>
               <HoverCard>
                 <TableCell>
-                  <HoverCardTrigger className="line-clamp-1 truncate w-40">{absensi.keterangan || '-'}</HoverCardTrigger>
+                  <HoverCardTrigger className="line-clamp-1 w-40 truncate">{absensi.keterangan || '-'}</HoverCardTrigger>
                   <HoverCardContent className="min-w-fit">
                     <div className="flex justify-between gap-4">
                       <div className="space-y-1">

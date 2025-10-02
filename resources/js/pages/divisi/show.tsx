@@ -6,7 +6,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Divisi } from '@/types/divisi';
 import { User } from '@/types/user';
 import { Link } from '@inertiajs/react';
-import { Folder } from 'lucide-react';
+import { ArrowLeft, Folder } from 'lucide-react';
 import { FC } from 'react';
 
 type Props = {
@@ -33,6 +33,16 @@ const ShowDivisi: FC<Props> = ({ divisi, users }) => {
       ]}
       title={`Detail Divisi ${divisi.name}`}
       description={`Menampilkan informasi lengkap mengenai divisi ${divisi.name} dan karyawan yang ter-daftar di dalamnya`}
+      actions={
+        <>
+          <Button asChild variant={'secondary'}>
+            <Link href={route('divisi.index')}>
+              <ArrowLeft />
+              Kembali ke list divisi
+            </Link>
+          </Button>
+        </>
+      }
     >
       <Card>
         <CardHeader>

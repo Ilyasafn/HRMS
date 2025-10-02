@@ -4,7 +4,8 @@ import StatusBadge from '@/components/ui/status-badge';
 import AppLayout from '@/layouts/app-layout';
 import { Cuti } from '@/types/cuti';
 import { User } from '@/types/user';
-import { Folder, FolderClock } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { ArrowLeft, Folder, FolderClock } from 'lucide-react';
 import { FC } from 'react';
 import CutiApprovalStatusDialog from './components/cuti-approval-status-dialog';
 
@@ -15,7 +16,34 @@ type Props = {
 
 const ShowCuti: FC<Props> = ({ cuti }) => {
   return (
-    <AppLayout title="Detail Cuti" description="Detail cuti">
+    <AppLayout
+      breadcrumbs={[
+        {
+          title: 'Dashboard',
+          href: '/dashboard',
+        },
+        {
+          title: 'Cuti',
+          href: route('cuti.index'),
+        },
+        {
+          title: `Detail Cuti ${cuti.user?.name} pada tanggal ${cuti.tgl_pengajuan}`,
+          href: route('cuti.show', cuti.id),
+        },
+      ]}
+      title="Detail Cuti"
+      description="Detail cuti"
+      actions={
+        <>
+          <Button asChild variant={'secondary'}>
+            <Link href={route('cuti.index')}>
+              <ArrowLeft />
+              Kembali ke list cuti
+            </Link>
+          </Button>
+        </>
+      }
+    >
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">

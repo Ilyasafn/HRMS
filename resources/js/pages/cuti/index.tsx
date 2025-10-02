@@ -34,6 +34,16 @@ const CutiList: FC<Props> = ({ cutis, query, users }) => {
 
   return (
     <AppLayout
+      breadcrumbs={[
+        {
+          title: 'Dashboard',
+          href: '/dashboard',
+        },
+        {
+          title: 'Cuti',
+          href: route('cuti.index'),
+        },
+      ]}
       title="Cutis"
       description="Manage your cutis"
       actions={

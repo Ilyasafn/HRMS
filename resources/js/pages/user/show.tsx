@@ -1,9 +1,12 @@
+import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import StatusBadge from '@/components/ui/status-badge';
 import AppLayout from '@/layouts/app-layout';
 import { capitalizeWords } from '@/lib/utils';
 import { User } from '@/types/user';
+import { Link } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
 import { FC } from 'react';
 
 type Props = {
@@ -29,6 +32,16 @@ const ShowUser: FC<Props> = ({ user }) => {
       ]}
       title={`Tentang ${user.name}`}
       description={user.roles?.length ? capitalizeWords(`${user.roles[0]?.name} ${user.divisi?.name}`) : 'User'}
+      actions={
+        <>
+          <Button asChild variant={'secondary'}>
+            <Link href={route('user.index')}>
+              <ArrowLeft />
+              Kembali ke list karyawan
+            </Link>
+          </Button>
+        </>
+      }
     >
       <Card>
         <CardHeader>
