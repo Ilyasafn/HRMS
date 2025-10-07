@@ -10,9 +10,12 @@ use App\Models\Cuti;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Requests\UploadCutiMediaRequest;
+use App\Models\Absensi;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CutiController extends Controller
 {
@@ -22,17 +25,46 @@ class CutiController extends Controller
     public function index(Request $request)
     {
         $this->pass("index cuti");
-        
-        $data = Cuti::query()
-            ->with(['media', 'user', 'approvedBy'])
-            ->when($request->name, function($q, $v){
-                $q->where('name', $v);
-            });
+
+        $user = Auth::user();
+    
+    // Custom check untuk Spatie roles
+    $isAdmin = false;
+    
+    // Method 1: Try Spatie first
+    if (method_exists($user, 'hasAnyRole')) {
+        $isAdmin = $user->hasAnyRole(['admin', 'superadmin']);
+    } 
+    // Method 2: Fallback ke custom logic
+    else {
+        // Cek jika ada roles relationship (Spatie)
+        if ($user->relationLoaded('roles')) {
+            $isAdmin = $user->roles->whereIn('name', ['admin', 'superadmin'])->isNotEmpty();
+        }
+        // Method 3: Fallback ke role column biasa
+        elseif (property_exists($user, 'role')) {
+            $isAdmin = in_array($user->role, ['admin', 'superadmin']);
+        }
+    }
+    
+    $query = Cuti::with(['user', 'approvedBy']);
+    if (!$isAdmin) {
+        $query->where('user_id', $user->id);
+    }
+    
+    $cutis = $query->orderBy('created_at', 'desc')->get();
+    
+    $users = [];
+    if ($isAdmin) {
+        $users = User::select('id', 'name')->get();
+    }
+
 
         return Inertia::render('cuti/index', [
-            'cutis' => $data->get(),
-            'query' => $request->input(),
-            'users' => User::get(),
+            'cutis' => $cutis,
+            'query' => $request->query(),
+            'users' => $users,
+            'isAdmin' => $isAdmin,
             'permissions' => [
                 'canAdd' => $this->user->can("create cuti"),
                 'canShow' => $this->user->can("show cuti"),
@@ -85,41 +117,123 @@ class CutiController extends Controller
         return redirect()->back()->with('success', 'Cuti berhasil diajukan');
     }
 
-    private function calculateWorkingDays(Carbon $start, Carbon $end): int
-    {
-
-        if (!$start || !$end) {
-        return 0;
+   /**
+ * Hitung jumlah hari kerja (update parameter menerima string)
+ */
+private function calculateWorkingDays(string $start, string $end): int
+{
+    $startDate = Carbon::parse($start);
+    $endDate = Carbon::parse($end);
+    
+    $totalDays = 0;
+    $current = $startDate->copy();
+    
+    while ($current->lte($endDate)) {
+        // Skip Saturday (6) and Sunday (7)
+        if (!$current->isWeekend()) {
+            $totalDays++;
         }
-
-        $totalDays = 0;
-        $current = $start->copy();
-        
-        while ($current->lte($end)) {
-            // Skip Saturday (6) and Sunday (7)
-            if (!$current->isWeekend()) {
-                $totalDays++;
-            }
-            $current->addDay();
-        }
-        
-        return $totalDays;
+        $current->addDay();
     }
-
-    public function approval(Request $request, Cuti $cuti)
+    
+    return $totalDays;
+}
+    public function approval(Request $request, Cuti $cuti) 
     {
-        $this->pass("update cuti");
+        $this->pass('approve cuti');
 
-        $validated = $request->validate([
+        $request->validate([
             'approval_status' => 'required|in:Approved,Rejected',
         ]);
 
-        $cuti->update([
-            'approval_status' => $validated['approval_status'],
-            'approved_by' => $this->user->id,
+        $cuti->load('user');
+
+        DB::transaction(function () use ($request, $cuti) {
+            $cuti->update([
+                    'approval_status' => $request->approval_status,
+                    'approved_by' => Auth::id(),
+                    'approved_at' => now(),
+                ]);
+            
+            if($request->approval_status === 'Approved') {
+                $this->generateAbsensiFromCuti($cuti);
+
+               if ($cuti->user) {
+                $cuti->user->decrement('sisa_cuti_tahunan', $cuti->jumlah_hari);
+                $cuti->user->increment('total_cuti_diambil', $cuti->jumlah_hari);
+            } else {
+                Log::error("User not found via relationship for cuti ID: {$cuti->id}");
+            }
+            }
+        });
+
+            return redirect()->back()->with('success', "Cuti berhasil di-{$request->approval_status}");
+    }
+
+    private function generateAbsensiFromCuti(Cuti $cuti) 
+    {
+        $startDate = Carbon::parse($cuti->tgl_mulai);
+        $endDate = Carbon::parse($cuti->tgl_selesai);
+
+        $absensiData = [];
+
+        for($date = $startDate; $date->lte($endDate); $date->addDay()) {
+            
+            if($date->isWeekend()){
+                continue;
+            }
+
+            try {
+            // ✅ GUNAKAN updateOrCreate UNTUK HANDLE DUPLICATE
+            Absensi::updateOrCreate(
+                [
+                    'user_id' => $cuti->user_id,
+                    'tanggal' => $date->format('Y-m-d')
+                ],
+                [
+                    'jam_masuk' => null,
+                    'jam_keluar' => null,
+                    'status' => 'Izin',
+                    'keterangan' => "Cuti: {$cuti->jenis_cuti} - {$cuti->alasan}",
+                    'approval_status' => 'Approved',
+                    'approved_by' => Auth::id(),
+                    'approved_at' => now(),
+                ]
+            );            
+        } catch (\Exception $e) {
+            Log::error("Failed to generate absensi for user {$cuti->user_id} on {$date->format('Y-m-d')}: " . $e->getMessage());
+        }
+
+            if(!empty($absensiData)) {
+                Absensi::insert($absensiData);
+            }
+    }
+}
+    public function ajukanCuti(Request $request) 
+    {
+        $validated = $request->validate([
+            'tgl_mulai' => 'required|date',
+            'tgl_selesai' => 'required|date|after_or_equal:tgl_mulai',
+            'jenis_cuti' => 'required|in:Cuti Tahunan,Cuti Besar,Cuti Sakit,Cuti Melahirkan,Cuti Lainnya',
+            'alasan' => 'required|string|max:500',
         ]);
 
-        return redirect()->back()->with('success', 'Cuti approved');
+
+        $cuti = Cuti::create([
+            'user_id' => Auth::id(),
+            'tgl_pengajuan' => date('Y-m-d'),
+            'tgl_mulai' => $validated['tgl_mulai'], // ← DATA ASLI
+            'tgl_selesai' => $validated['tgl_selesai'], // ← DATA ASLI
+            'jumlah_hari' => $this->calculateWorkingDays(
+                $validated['tgl_mulai'],
+                $validated['tgl_selesai']
+            ),
+            'alasan' => $validated['alasan'],
+            'jenis_cuti' => $validated['jenis_cuti'],
+            'approval_status' => 'Pending',
+        ]);
+
+        return redirect()->back()->with('success', 'Cuti berhasil diajukan! Menunggu approval.');
     }
 
     /**
@@ -129,10 +243,18 @@ class CutiController extends Controller
     {
         $this->pass("show cuti");
         $cuti->load('user');
+        $user = Auth::user();
 
+        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();
+
+         // Untuk user biasa, pastikan hanya bisa akses cuti sendiri
+        if (!$isAdmin && $cuti->user_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
+        }
 
         return Inertia::render('cuti/show', [
             'cuti' => $cuti,
+            'isAdmin' => $isAdmin,
             'permissions' => [
                 'canUpdate' => $this->user->can("update cuti"),
                 'canDelete' => $this->user->can("delete cuti"),

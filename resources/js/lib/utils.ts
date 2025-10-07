@@ -124,3 +124,13 @@ export function formatRupiah(angka: number): string {
     minimumFractionDigits: 0,
   }).format(angka);
 }
+
+// utils/dateUtils.ts atau tambah di lib/utils.ts
+export const isWeekend = (date: Date = new Date()): boolean => {
+  const day = date.getDay(); // 0 = Minggu, 6 = Sabtu
+  return day === 0 || day === 6;
+};
+
+export const isTodayWeekend = (): boolean => {
+  return isWeekend(new Date());
+};

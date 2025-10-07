@@ -4,6 +4,7 @@ import { dateDFY } from '@/lib/utils';
 import { Cuti } from '@/types/cuti';
 import { router } from '@inertiajs/react';
 import { PropsWithChildren, useState } from 'react';
+import { toast } from 'sonner';
 
 type Props = PropsWithChildren & {
   cuti: Cuti;
@@ -13,14 +14,31 @@ const CutiApprovalStatusDialog = ({ children, cuti }: Props) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleApproval = (status: 'Approved' | 'Rejected') => {
+  const handleApprove = () => {
     setLoading(true);
     router.put(
-      route('cuti.approval', { id: cuti.id }),
-      { approval_status: status },
+      route('cuti.approval', cuti.id),
       {
-        onFinish: () => setLoading(false),
-        onSuccess: () => setOpen(false),
+        approval_status: 'Approved',
+      },
+      {
+        preserveScroll: true,
+        onSuccess: () => toast.success('Cuti Approved'),
+        onError: () => toast.error('Cuti Approval Failed'),
+      },
+    );
+  };
+
+  const handleReject = () => {
+    router.put(
+      route('cuti.approval', cuti.id),
+      {
+        approval_status: 'Rejected',
+      },
+      {
+        preserveScroll: true,
+        onSuccess: () => toast.success('Cuti rejected!'),
+        onError: () => toast.error('Gagal reject cuti'),
       },
     );
   };
@@ -36,10 +54,10 @@ const CutiApprovalStatusDialog = ({ children, cuti }: Props) => {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button className="border-red-200 bg-red-200 text-red-800" size={'sm'} disabled={loading} onClick={() => handleApproval('Rejected')}>
+          <Button className="border-red-200 bg-red-200 text-red-800" size={'sm'} disabled={loading} onClick={() => handleReject()}>
             Reject
           </Button>
-          <Button className="border-green-200 bg-green-200 text-green-800" size={'sm'} disabled={loading} onClick={() => handleApproval('Approved')}>
+          <Button className="border-green-200 bg-green-200 text-green-800" size={'sm'} disabled={loading} onClick={() => handleApprove()}>
             Approve
           </Button>
         </DialogFooter>

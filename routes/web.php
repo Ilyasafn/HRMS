@@ -62,6 +62,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('cuti/{cuti}/restore', [CutiController::class, 'restore'])->name('cuti.restore');
     Route::delete('cuti/{cuti}/force-delete', [CutiController::class, 'forceDelete'])->name('cuti.force-delete');
     Route::post('cuti/{cuti}/upload-media', [CutiController::class, 'uploadMedia'])->name('cuti.upload-media');
+    Route::post('cuti/ajukan-cuti', [CutiController::class, 'ajukanCuti'])->name('cuti.ajukan-cuti');
     Route::put('cuti/{cuti}/approval', [CutiController::class, 'approval'])->name('cuti.approval');
     Route::apiResource('cuti', CutiController::class);
 });

@@ -138,7 +138,7 @@ const CutiFormSheet: FC<Props> = ({ children, cuti, purpose, users = [] }) => {
             )}
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <FormControl label="Tanggal masuk">
+              <FormControl label="Tanggal pengajuan">
                 <Popover open={tglCutiOpen} onOpenChange={setTglCutiOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" id="date" className="w-full justify-between font-normal">

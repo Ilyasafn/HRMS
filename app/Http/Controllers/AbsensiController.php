@@ -146,8 +146,6 @@ class AbsensiController extends Controller
 
     public function handleAbsensi(Request $request)
     {
-        // $this->pass('create/update absensi');
-
         $userId = Auth::id();
         $today = Carbon::today('Asia/Makassar')->format('Y-m-d');
         $now = Carbon::now();
@@ -158,7 +156,7 @@ class AbsensiController extends Controller
         ->whereDate('tanggal', $today)
         ->first();
 
-        if($absensi && in_array($absensi->$status, ['Sakit', 'Izin', 'Lainnya'])) {
+        if($absensi && in_array($absensi->status, ['Sakit', 'Izin', 'Lainnya'])) {
 
             return redirect()->back()->with('error', 'Anda sudah melakukan izin pada hari ini');
         }
@@ -177,7 +175,9 @@ class AbsensiController extends Controller
             return redirect()->back()->with('success', 'Check-In Berhasil' . $status);
         }
 
-        if(is_null($absensi->jam_keluar)){
+        // ✅ CEK APAKAH SUDAH CHECK-IN TAPI BELUM CHECK-OUT
+        if($absensi->jam_masuk && is_null($absensi->jam_keluar)) {
+            // CHECK OUT
             $absensi->update([
                 'jam_keluar' => $now->format('H:i:s'),
             ]);
@@ -185,6 +185,10 @@ class AbsensiController extends Controller
             return redirect()->back()->with('success', 'Check-Out Berhasil');
         }
 
+           // ✅ CEK APAKAH SUDAH CHECK-IN DAN CHECK-OUT
+        if($absensi->jam_masuk && $absensi->jam_keluar) {
+            return redirect()->back()->with('error', 'Anda sudah melakukan absensi lengkap hari ini!');
+        }
 
         return redirect()->back()->with('error', 'Anda sudah melakukan absensi hari ini!');
     }

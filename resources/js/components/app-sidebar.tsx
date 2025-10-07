@@ -21,11 +21,13 @@ export function AppSidebar() {
       title: 'Divisi',
       href: route('divisi.index'),
       icon: Building,
+      available: menus.divisi,
     },
     {
       title: 'Karyawan',
       href: route('user.index'),
       icon: UserSearch,
+      available: menus.user,
     },
     {
       title: 'Absensi',
@@ -37,6 +39,7 @@ export function AppSidebar() {
       title: 'Cuti',
       href: route('cuti.index'),
       icon: BookMarked,
+      available: menus.cuti,
     },
     {
       title: 'Documentation',

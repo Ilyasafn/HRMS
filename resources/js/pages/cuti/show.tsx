@@ -12,9 +12,10 @@ import CutiApprovalStatusDialog from './components/cuti-approval-status-dialog';
 type Props = {
   cuti: Cuti;
   user: User;
+  isAdmin: boolean;
 };
 
-const ShowCuti: FC<Props> = ({ cuti }) => {
+const ShowCuti: FC<Props> = ({ cuti, isAdmin }) => {
   return (
     <AppLayout
       breadcrumbs={[
@@ -51,13 +52,15 @@ const ShowCuti: FC<Props> = ({ cuti }) => {
               <CardTitle>{cuti.user?.name}</CardTitle>
               <StatusBadge status={cuti.approval_status} />
             </div>
-            <div className="order-2 w-fit">
-              <CutiApprovalStatusDialog cuti={cuti}>
-                <Button variant={'ghost'} size={'icon'}>
-                  {cuti?.approval_status === 'Pending' ? <FolderClock /> : <Folder />}
-                </Button>
-              </CutiApprovalStatusDialog>
-            </div>
+            {isAdmin && (
+              <div className="order-2 w-fit">
+                <CutiApprovalStatusDialog cuti={cuti}>
+                  <Button variant={'ghost'} size={'icon'}>
+                    {cuti?.approval_status === 'Pending' ? <FolderClock /> : <Folder />}
+                  </Button>
+                </CutiApprovalStatusDialog>
+              </div>
+            )}
           </div>
           <CardDescription>Tanggal mulai cuti: {cuti.tgl_mulai || '-'}</CardDescription>
           <CardDescription>Tanggal selesai cuti: {cuti.tgl_selesai || '-'}</CardDescription>

@@ -1,17 +1,19 @@
 // resources/js/pages/dashboard/components/AbsensiCard.tsx
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import StatusBadge from '@/components/ui/status-badge';
 import { Textarea } from '@/components/ui/textarea';
 import { dateDFY } from '@/lib/utils';
-import { router } from '@inertiajs/react';
-import { AlertCircle, Calendar as CalendarIcon, CheckCircle, Clock, MoreHorizontal, Plus, Stethoscope, UserCheck } from 'lucide-react';
-import { useState } from 'react';
+import { router, usePage } from '@inertiajs/react';
+import { AlertCircle, Calendar as CalendarIcon, CheckCircle, ChevronDown, Clock, MoreHorizontal, Plus, Stethoscope, UserCheck } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 type Absensi = {
@@ -25,8 +27,21 @@ type Absensi = {
   keterangan?: string;
 };
 
+type Cuti = {
+  id: number;
+  user_id: number;
+  tgl_pengajuan: string;
+  tgl_mulai: string;
+  tgl_selesai: string;
+  jenis_cuti: string;
+  alasan: string;
+  approval_status: 'Pending' | 'Approved' | 'Rejected';
+};
+
 type AbsensiCardProps = {
   absensiHariIni?: Absensi | null;
+  cutiHariIni?: Cuti | null;
+  pengajuanCutiAktif?: Cuti[];
 };
 
 type IzinForm = {
@@ -36,10 +51,34 @@ type IzinForm = {
   keterangan: string;
 };
 
-export default function AbsensiCard({ absensiHariIni }: AbsensiCardProps) {
+type CutiForm = {
+  tgl_mulai: string;
+  tgl_selesai: string;
+  jenis_cuti: 'Cuti Tahunan' | 'Cuti Besar' | 'Cuti Sakit' | 'Cuti Melahirkan' | 'Cuti Lainnya';
+  alasan: string;
+};
+
+export default function AbsensiCard({
+  absensiHariIni: initialAbsensi,
+  cutiHariIni: initialCuti,
+  pengajuanCutiAktif: initialPengajuan,
+}: AbsensiCardProps) {
+  const { props } = usePage<AbsensiCardProps>();
+
+  // local mutable state (supaya kita bisa update UI after API)
+  const [absensi, setAbsensi] = useState<Absensi | null>(initialAbsensi ?? props.absensiHariIni ?? null);
+  const [cuti, setCuti] = useState<Cuti | null>(initialCuti ?? props.cutiHariIni ?? null);
+  const [pengajuanCutiAktif, setPengajuanCutiAktif] = useState<Cuti[]>(initialPengajuan ?? props.pengajuanCutiAktif ?? []);
+
+  // UI state
   const [isLoading, setIsLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogCutiOpen, setDialogCutiOpen] = useState(false);
+  const [tglMulaiOpen, setTglMulaiOpen] = useState(false);
+  const [tglSelesaiOpen, setTglSelesaiOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [tglMulai, setTglMulai] = useState<Date | undefined>(undefined);
+  const [tglSelesai, setTglSelesai] = useState<Date | undefined>(undefined);
 
   const [izinForm, setIzinForm] = useState<IzinForm>({
     tanggal: new Date().toISOString().split('T')[0],
@@ -48,103 +87,277 @@ export default function AbsensiCard({ absensiHariIni }: AbsensiCardProps) {
     keterangan: '',
   });
 
-  // Handle date selection
+  const [cutiForm, setCutiForm] = useState<CutiForm>({
+    tgl_mulai: '',
+    tgl_selesai: '',
+    jenis_cuti: 'Cuti Tahunan',
+    alasan: '',
+  });
 
-  // Handle absensi check-in/out
-  const handleAbsensi = async () => {
-    setIsLoading(true);
-    router.post(
-      route('absensi.handle'),
-      {},
-      {
-        preserveScroll: true,
-        onSuccess: () => {},
-        onFinish: () => setIsLoading(false),
-      },
-    );
+  useEffect(() => {
+    // sync props -> local state when props change (Inertia navigation)
+    setAbsensi(initialAbsensi ?? props.absensiHariIni ?? null);
+    setCuti(initialCuti ?? props.cutiHariIni ?? null);
+    setPengajuanCutiAktif(initialPengajuan ?? props.pengajuanCutiAktif ?? []);
+  }, [initialAbsensi, initialCuti, initialPengajuan, props.absensiHariIni, props.cutiHariIni, props.pengajuanCutiAktif]);
+
+  const formattedDate = (date: Date): string => {
+    const adjustedDate = new Date(date.getTime() + 8 * 60 * 60 * 1000); // UTC+8
+    return adjustedDate.toISOString().split('T')[0];
   };
 
-  // Handle pengajuan izin
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  // Derived flags (lebih fleksibel daripada single 'status' string)
+  const isInApprovedCutiPeriod = useMemo(() => {
+    if (!cuti) return false;
+    return cuti.approval_status === 'Approved' && todayStr >= cuti.tgl_mulai && todayStr <= cuti.tgl_selesai;
+  }, [cuti, todayStr]);
+
+  const hasCheckedInToday = useMemo(() => !!absensi, [absensi]);
+  const hasCheckedOutToday = useMemo(() => !!absensi && !!absensi.jam_keluar, [absensi]);
+
+  // NEW: Check if user has any cuti pengajuan
+  const hasAnyCutiPengajuan = useMemo(() => pengajuanCutiAktif.length > 0, [pengajuanCutiAktif]);
+
+  // NEW: Check if user has pending cuti
+  const hasPendingCuti = useMemo(() => pengajuanCutiAktif.some((cuti) => cuti.approval_status === 'Pending'), [pengajuanCutiAktif]);
+
+  // Decide which main blocks to render:
+  const renderCutiBanner = isInApprovedCutiPeriod;
+
+  // Button config depends on combination of flags
+  const computeButtonConfig = () => {
+    if (renderCutiBanner) {
+      return { text: `Sedang Cuti (${cuti?.jenis_cuti})`, icon: <CheckCircle />, variant: 'secondary' as const, disabled: true };
+    }
+
+    // Jika user sudah ajukan izin/sakit/lainnya
+    if (hasCheckedInToday && ['Sakit', 'Izin', 'Lainnya'].includes(absensi?.status || '')) {
+      return { text: `Sudah Ajukan ${absensi?.status}`, icon: <CheckCircle />, variant: 'secondary' as const, disabled: true };
+    }
+
+    if (!hasCheckedInToday) {
+      return { text: 'Check In', icon: <Clock />, variant: 'default' as const, disabled: false };
+    }
+    if (hasCheckedInToday && !hasCheckedOutToday) {
+      return { text: 'Check Out', icon: <CheckCircle />, variant: 'outline' as const, disabled: false };
+    }
+    return { text: 'Absensi Lengkap', icon: <CheckCircle />, variant: 'secondary' as const, disabled: true };
+  };
+
+  const buttonConfig = computeButtonConfig();
+
+  // Helpers
+  const getNowTime = () => {
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    const ss = String(d.getSeconds()).padStart(2, '0');
+    return `${hh}:${mm}:${ss}`;
+  };
+
+  // === Handlers ===
+  const handleAbsensi = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    const originalAbsensi = absensi;
+
+    try {
+      if (!absensi) {
+        // Check-in optimistic update
+        const optimistic: Absensi = {
+          id: -Date.now(),
+          user_id: 0,
+          tanggal: todayStr,
+          jam_masuk: getNowTime(),
+          jam_keluar: null,
+          status: 'Hadir',
+          approval_status: 'Pending',
+          keterangan: undefined,
+        };
+        setAbsensi(optimistic);
+
+        await router.post(
+          route('absensi.handle'),
+          {},
+          {
+            preserveScroll: true,
+            onSuccess: () => {
+              toast.success('Check-in berhasil!');
+            },
+            onError: () => {
+              toast.error('Gagal check-in');
+              setAbsensi(originalAbsensi);
+            },
+          },
+        );
+      } else if (absensi && !absensi.jam_keluar) {
+        // Checkout optimistic update
+        const updated = { ...absensi, jam_keluar: getNowTime() };
+        setAbsensi(updated);
+
+        await router.post(
+          route('absensi.handle'),
+          {},
+          {
+            preserveScroll: true,
+            onSuccess: () => {
+              toast.success('Check-out berhasil!');
+            },
+            onError: () => {
+              toast.error('Gagal check-out');
+              setAbsensi(originalAbsensi);
+            },
+          },
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Terjadi kesalahan jaringan');
+      setAbsensi(originalAbsensi);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleAjukanIzin = async () => {
     if (!selectedDate) {
       toast.error('Pilih tanggal terlebih dahulu');
       return;
     }
 
-    const year = selectedDate.getFullYear();
-    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-    const day = String(selectedDate.getDate()).padStart(2, '0');
-
-    const formattedDate = `${year}-${month}-${day}`;
-
     if (izinForm.tipe === 'Lainnya' && !izinForm.jenis_lainnya.trim()) {
-      alert('Harap isi jenis izin untuk opsi Lainnya');
+      toast.error('Isi jenis izin untuk opsi Lainnya');
       return;
     }
 
-    if (!izinForm.tanggal) {
-      alert('Harap pilih tanggal izin');
+    if (!izinForm.keterangan.trim()) {
+      toast.error('Alasan detail wajib diisi');
       return;
     }
 
     setIsLoading(true);
 
     const formData = new FormData();
-    formData.append('tanggal', izinForm.tanggal);
+    formData.append('tanggal', formattedDate(selectedDate));
     formData.append('tipe', izinForm.tipe);
-    formData.append('keterangan', izinForm.keterangan);
+    formData.append('keterangan', izinForm.keterangan || '');
+    if (izinForm.tipe === 'Lainnya') formData.append('jenis_lainnya', izinForm.jenis_lainnya);
 
-    if (izinForm.tipe === 'Lainnya') {
-      formData.append('jenis_lainnya', izinForm.jenis_lainnya);
+    try {
+      // optimistic: mark absensi as izin locally
+      const optimisticIzin: Absensi = {
+        id: -Date.now(),
+        user_id: 0,
+        tanggal: formattedDate(selectedDate),
+        jam_masuk: '',
+        jam_keluar: null,
+        status: izinForm.tipe,
+        approval_status: 'Pending',
+        keterangan: izinForm.keterangan,
+      };
+      setAbsensi(optimisticIzin);
+
+      await router.post(route('absensi.ajukan-izin'), formData, {
+        preserveScroll: true,
+        onSuccess: () => {
+          toast.success('Izin diajukan');
+          setDialogOpen(false);
+          // reset form
+          setSelectedDate(new Date());
+          setIzinForm({
+            tanggal: formattedDate(new Date()),
+            tipe: 'Izin',
+            jenis_lainnya: '',
+            keterangan: '',
+          });
+        },
+        onError: () => {
+          toast.error('Gagal mengajukan izin');
+          setAbsensi(null);
+        },
+        onFinish: () => setIsLoading(false),
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error('Terjadi kesalahan');
+      setIsLoading(false);
     }
-
-    router.post(route('absensi.ajukan-izin'), formData, {
-      // ✅ FIX: Tambah onSuccess untuk refresh dan reset form
-      preserveScroll: true,
-      onSuccess: () => {
-        setDialogOpen(false);
-        // Reset form
-        const today = new Date();
-        setSelectedDate(today);
-        setIzinForm({
-          tanggal: formattedDate,
-          tipe: 'Izin',
-          jenis_lainnya: '',
-          keterangan: '',
-        });
-      },
-      onError: (errors) => {
-        console.error('Error submitting izin:', errors);
-        alert('Gagal mengajukan izin: ' + JSON.stringify(errors));
-      },
-      onFinish: () => {
-        setIsLoading(false);
-      },
-    });
   };
 
-  const getCurrentStatus = () => {
-    if (!absensiHariIni) return 'belum-checkin';
-    if (absensiHariIni?.status && ['Sakit', 'Izin', 'Lainnya'].includes(absensiHariIni?.status)) {
-      return 'izin';
+  const handleAjukanCuti = async () => {
+    if (!cutiForm.tgl_mulai || !cutiForm.tgl_selesai) {
+      toast.error('Tanggal mulai dan selesai harus diisi');
+      return;
     }
-    if (absensiHariIni && !absensiHariIni.jam_keluar) return 'sudah-checkin';
-    return 'completed';
+
+    if (new Date(cutiForm.tgl_mulai) > new Date(cutiForm.tgl_selesai)) {
+      toast.error('Tanggal selesai harus setelah tanggal mulai');
+      return;
+    }
+
+    if (!cutiForm.alasan.trim()) {
+      toast.error('Alasan wajib diisi');
+      return;
+    }
+
+    setIsLoading(true);
+
+    const formData = new FormData();
+    formData.append('tgl_mulai', cutiForm.tgl_mulai);
+    formData.append('tgl_selesai', cutiForm.tgl_selesai);
+    formData.append('jenis_cuti', cutiForm.jenis_cuti);
+    formData.append('alasan', cutiForm.alasan);
+
+    try {
+      // optimistic: add pengajuan locally
+      const optimisticCuti: Cuti = {
+        id: -Date.now(),
+        user_id: 0,
+        tgl_pengajuan: todayStr,
+        tgl_mulai: cutiForm.tgl_mulai,
+        tgl_selesai: cutiForm.tgl_selesai,
+        jenis_cuti: cutiForm.jenis_cuti,
+        alasan: cutiForm.alasan,
+        approval_status: 'Pending',
+      };
+      setPengajuanCutiAktif((prev) => [optimisticCuti, ...prev]);
+
+      await router.post(route('cuti.ajukan-cuti'), formData, {
+        preserveScroll: true,
+        onSuccess: () => {
+          toast.success('Cuti Berhasil diajukan! Silahkan lakukan absensi normal selagi menunggu persetujuan!');
+          setDialogCutiOpen(false);
+          setCutiForm({
+            tgl_mulai: '',
+            tgl_selesai: '',
+            jenis_cuti: 'Cuti Tahunan',
+            alasan: '',
+          });
+          setTglMulai(undefined);
+          setTglSelesai(undefined);
+        },
+        onError: () => {
+          toast.error('Gagal mengajukan cuti');
+          setPengajuanCutiAktif((prev) => prev.filter((c) => c.id !== optimisticCuti.id));
+        },
+        onFinish: () => setIsLoading(false),
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error('Gagal mengajukan cuti');
+      setIsLoading(false);
+    }
   };
 
-  const status = getCurrentStatus();
-  const buttonConfig = {
-    izin: { text: `Sudah izin (${absensiHariIni?.status})`, icon: <CheckCircle />, variant: 'secondary' as const, disabled: true },
-    'belum-checkin': { text: 'Check In', icon: <Clock />, variant: 'default' as const, disabled: false },
-    'sudah-checkin': { text: 'Check Out', icon: <CheckCircle />, variant: 'outline' as const, disabled: false },
-    completed: {
-      text: 'Absensi Lengkap',
-      icon: <CheckCircle />,
-      variant: 'secondary' as const,
-      disabled: true,
-    },
-  }[status];
+  // NEW: Handler untuk lihat detail cuti
+  const handleLihatDetailCuti = () => {
+    router.get(route('cuti.index')); // Adjust route sesuai kebutuhan
+  };
 
+  // Render
   return (
     <Card className="w-full">
       <CardHeader className="pb-3">
@@ -154,203 +367,566 @@ export default function AbsensiCard({ absensiHariIni }: AbsensiCardProps) {
         </CardTitle>
       </CardHeader>
 
-      {/* Card Absensi */}
       <CardContent className="space-y-4">
-        {status === 'belum-checkin' ? (
+        {/* === BELUM CHECKIN MESSAGE === */}
+        {!hasCheckedInToday && !renderCutiBanner && (
           <div className="py-6 text-center">
-            <AlertCircle className="mx-auto mb-3 h-12 w-12 text-amber-500" />
+            <AlertCircle className="mx-auto mb-3 h-10 w-10 text-amber-500" />
             <CardDescription>
               <p className="mb-2 text-lg font-medium text-gray-700">Anda belum melakukan absensi hari ini</p>
-              <p className="mb-4 text-sm text-gray-500">Silakan lakukan check-in absensi atau ajukan izin jika tidak hadir</p>
+              <p className="mb-4 text-sm text-gray-500">Silakan lakukan check-in absensi atau ajukan izin jika tidak hadir.</p>
             </CardDescription>
           </div>
-        ) : absensiHariIni?.status && ['Sakit', 'Izin', 'Lainnya'].includes(absensiHariIni?.status) ? (
-          <div>
-            <div className="py-6 text-center">
-              <CheckCircle className="mx-auto mb-3 h-12 w-12 text-green-500" />
-              <CardDescription>
-                <p className="mb-2 text-lg font-medium text-gray-400">Anda sudah mengajukan {absensiHariIni?.status}</p>
-                <p className="mb-2 text-sm text-gray-200">{dateDFY(absensiHariIni?.tanggal || '')}</p>
-                {absensiHariIni?.keterangan && (
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-400">Alasan:</p>
-                    <p className="text-sm text-gray-200">{absensiHariIni.keterangan}</p>
-                  </div>
-                )}
-                <p className="mt-3 text-sm">
-                  <StatusBadge status={absensiHariIni?.approval_status} />
-                </p>
-              </CardDescription>
-            </div>
+        )}
+
+        {/* === IZIN / SAAT ADA ABSENSI DENGAN STATUS Izin/Sakit/Lainnya === */}
+        {hasCheckedInToday && absensi && ['Sakit', 'Izin', 'Lainnya'].includes(absensi.status) && (
+          <div className="py-6 text-center">
+            <CheckCircle className="mx-auto mb-3 h-10 w-10 text-green-500" />
+            <CardDescription>
+              <p className="mb-2 text-lg font-medium text-gray-400">Anda sudah mengajukan {absensi.status}</p>
+              <p className="mb-2 text-sm text-gray-200">{dateDFY(absensi.tanggal)}</p>
+              {absensi.keterangan && (
+                <div className="mt-2">
+                  <p className="text-sm text-gray-400">Alasan:</p>
+                  <p className="text-sm text-gray-200">{absensi.keterangan}</p>
+                </div>
+              )}
+              <p className="mt-3 text-sm">
+                <StatusBadge status={absensi.approval_status} />
+              </p>
+            </CardDescription>
           </div>
-        ) : (
+        )}
+
+        {/* === DETAIL ABSENSI (jika sudah checkin atau completed) === */}
+        {((hasCheckedInToday && absensi && absensi.status === 'Hadir') || absensi?.status === 'Telat') && (
           <div className="space-y-4">
             <div className="rounded-lg p-4">
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                 <div className="col-span-2 md:col-span-1">
                   <p className="text-sm font-medium text-gray-600">Tanggal</p>
-                  <p className="text-lg font-semibold">{dateDFY(absensiHariIni!.tanggal)}</p>
+                  <p className="text-lg font-semibold">{dateDFY(absensi.tanggal)}</p>
                 </div>
 
                 <div>
                   <p className="text-sm font-medium text-gray-600">Status</p>
-                  <StatusBadge status={absensiHariIni?.status || 'N/A'} />
+                  <StatusBadge status={absensi.status || 'N/A'} />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-600">Approval</p>
-                  <StatusBadge status={absensiHariIni!.approval_status} />
+                  <StatusBadge status={absensi.approval_status} />
                 </div>
                 <div className="col-span-1 md:col-span-2">
                   <p className="text-sm font-medium text-gray-600">Jam Masuk</p>
-                  <p className="text-lg font-semibold text-green-600">{absensiHariIni!.jam_masuk || '-'}</p>
+                  <p className="text-lg font-semibold text-green-600">{absensi.jam_masuk || '-'}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-600">Jam Keluar</p>
-                  <p className={`text-lg font-semibold ${absensiHariIni!.jam_keluar ? 'text-red-600' : 'text-gray-400'}`}>
-                    {absensiHariIni!.jam_keluar || 'Belum check-out'}
+                  <p className={`text-lg font-semibold ${absensi.jam_keluar ? 'text-red-600' : 'text-gray-400'}`}>
+                    {absensi.jam_keluar || 'Belum check-out'}
                   </p>
                 </div>
-                <div>
-                  {absensiHariIni!.keterangan && (
-                    <div className="col-span-2">
-                      <p className="text-sm font-medium text-gray-600">Keterangan</p>
-                      <p className="text-sm">{absensiHariIni!.keterangan}</p>
-                    </div>
-                  )}
-                </div>
+                {absensi.keterangan && (
+                  <div className="col-span-2">
+                    <p className="text-sm font-medium text-gray-600">Keterangan</p>
+                    <p className="text-sm">{absensi.keterangan}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         )}
 
-        {/* Tombol Absensi */}
-        <div className="grid w-full grid-rows-1 gap-2">
-          <Button onClick={handleAbsensi} disabled={buttonConfig.disabled || isLoading} variant={buttonConfig.variant} size="lg" className="w-full">
-            {buttonConfig.icon}
-            {isLoading ? 'Memproses...' : buttonConfig.text}
-          </Button>
-
-          {/* Separator */}
-          <Separator />
-
-          {/* Tombol Ajukan Izin */}
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="w-full" size="lg" disabled={buttonConfig.disabled}>
-                <Plus className="mr-2 h-4 w-4" />
-                {status === 'izin' ? 'Anda telah mengajukan izin' : 'Ajukan Izin, Sakit atau Lainnya'}
-              </Button>
-            </DialogTrigger>
-
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Form Pengajuan Izin</DialogTitle>
-                <DialogDescription>form pengisian izin kerja</DialogDescription>
-              </DialogHeader>
-
-              {/* Tipe Izin */}
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="tipe" className="text-right">
-                    Jenis Izin
-                  </Label>
-                  <Select
-                    value={izinForm.tipe}
-                    onValueChange={(value: 'Sakit' | 'Izin' | 'Lainnya') => setIzinForm({ ...izinForm, tipe: value, jenis_lainnya: '' })}
-                  >
-                    <SelectTrigger className="col-span-3 w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Sakit">
-                        <div className="flex items-center gap-2">
-                          <Stethoscope className="h-4 w-4" />
-                          Sakit
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="Izin">
-                        <div className="flex items-center gap-2">
-                          <UserCheck className="h-4 w-4" />
-                          Izin
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="Lainnya">
-                        <div className="flex items-center gap-2">
-                          <MoreHorizontal className="h-4 w-4" />
-                          Lainnya
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Field Jenis Lainnya */}
-                {izinForm.tipe === 'Lainnya' && (
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="jenis_lainnya" className="text-right">
-                      Jenis Izin
-                    </Label>
-                    <Input
-                      id="jenis_lainnya"
-                      value={izinForm.jenis_lainnya}
-                      onChange={(e) => setIzinForm({ ...izinForm, jenis_lainnya: e.target.value })}
-                      placeholder="Contoh: Urusan Keluarga, Acara penting, dll."
-                      className="col-span-3"
-                    />
+        {/* === SUDAH CHECKIN - TAMPILKAN DETAIL === */}
+        {/* {hasCheckedInToday && absensi && (
+          <div className="space-y-4">
+            {absensi.status === 'Hadir' ? (
+              // DETAIL ABSENSI NORMAL
+              <div className="rounded-lg border p-4">
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                  <div className="col-span-2 md:col-span-1">
+                    <p className="text-sm font-medium text-gray-600">Tanggal</p>
+                    <p className="text-lg font-semibold">{dateDFY(absensi.tanggal)}</p>
                   </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Status</p>
+                    <StatusBadge status={absensi.status} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Approval</p>
+                    <StatusBadge status={absensi.approval_status} />
+                  </div>
+                  <div className="col-span-1 md:col-span-2">
+                    <p className="text-sm font-medium text-gray-600">Jam Masuk</p>
+                    <p className="text-lg font-semibold text-green-600">{absensi.jam_masuk || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Jam Keluar</p>
+                    <p className={`text-lg font-semibold ${absensi.jam_keluar ? 'text-red-600' : 'text-gray-400'}`}>
+                      {absensi.jam_keluar || 'Belum check-out'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // IZIN/SAKIT/LAINNYA
+              <div className="rounded-lg bg-gray-50 py-6 text-center">
+                <CheckCircle className="mx-auto mb-3 h-12 w-12 text-green-500" />
+                <CardDescription>
+                  <p className="mb-2 text-lg font-medium text-gray-700">Anda sudah mengajukan {absensi.status}</p>
+                  <p className="mb-2 text-sm text-gray-500">{dateDFY(absensi.tanggal)}</p>
+                  <StatusBadge status={absensi.approval_status} />
+                </CardDescription>
+              </div>
+            )}
+          </div>
+        )} */}
+
+        {/* === BUTTONS === */}
+        <div className="grid w-full grid-rows-1 gap-2">
+          {/* Main Action Button */}
+          {!renderCutiBanner && !(hasCheckedInToday && ['Sakit', 'Izin', 'Lainnya'].includes(absensi?.status || '')) && (
+            <Button onClick={handleAbsensi} disabled={buttonConfig.disabled || isLoading} variant={buttonConfig.variant} size="lg" className="w-full">
+              {buttonConfig.icon}
+              {isLoading ? 'Memproses...' : buttonConfig.text}
+            </Button>
+          )}
+
+          {/* Show separator only if main button shown */}
+          {!renderCutiBanner && !(hasCheckedInToday && ['Sakit', 'Izin', 'Lainnya'].includes(absensi?.status || '')) && <Separator />}
+
+          <div className="flex w-full flex-col items-center justify-between gap-2 md:flex-row">
+            {/* AJUKAN IZIN */}
+            {!renderCutiBanner && (
+              <div className="order-first w-full">
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full" size="lg" disabled={isLoading || hasCheckedInToday}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      {absensi && ['Sakit', 'Izin', 'Lainnya'].includes(absensi.status)
+                        ? 'Anda telah mengajukan izin'
+                        : 'Ajukan Izin, Sakit atau lainnya'}
+                    </Button>
+                  </DialogTrigger>
+
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle>Form Pengajuan Izin</DialogTitle>
+                      <DialogDescription>form pengisian izin kerja</DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="tipe" className="text-right">
+                          Jenis Izin
+                        </Label>
+                        <Select
+                          value={izinForm.tipe}
+                          onValueChange={(value: 'Sakit' | 'Izin' | 'Lainnya') => setIzinForm({ ...izinForm, tipe: value, jenis_lainnya: '' })}
+                        >
+                          <SelectTrigger className="col-span-3 w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Sakit">
+                              <div className="flex items-center gap-2">
+                                <Stethoscope className="h-4 w-4" />
+                                Sakit
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="Izin">
+                              <div className="flex items-center gap-2">
+                                <UserCheck className="h-4 w-4" />
+                                Izin
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="Lainnya">
+                              <div className="flex items-center gap-2">
+                                <MoreHorizontal className="h-4 w-4" />
+                                Lainnya
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {izinForm.tipe === 'Lainnya' && (
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="jenis_lainnya" className="text-right">
+                            Jenis Izin
+                          </Label>
+                          <Input
+                            id="jenis_lainnya"
+                            value={izinForm.jenis_lainnya}
+                            onChange={(e) => setIzinForm({ ...izinForm, jenis_lainnya: e.target.value })}
+                            placeholder="Contoh: Urusan Keluarga, Acara penting, dll."
+                            className="col-span-3"
+                          />
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label className="text-right">Tanggal</Label>
+                        <div className="col-span-3">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" className="w-full justify-between font-normal">
+                                {selectedDate?.toLocaleDateString('id-ID', {
+                                  weekday: 'long',
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                                })}
+                                <CalendarIcon className="ml-2 h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={selectedDate}
+                                onSelect={(date) => {
+                                  if (date) {
+                                    setSelectedDate(date);
+                                    setIzinForm({ ...izinForm, tanggal: formattedDate(date) });
+                                  }
+                                }}
+                                disabled={(date) => date < new Date()}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="keterangan" className="text-right">
+                          Alasan Detail
+                        </Label>
+                        <Textarea
+                          id="keterangan"
+                          value={izinForm.keterangan}
+                          onChange={(e) => setIzinForm({ ...izinForm, keterangan: e.target.value })}
+                          placeholder={
+                            izinForm.tipe === 'Lainnya' ? 'Jelaskan detail alasan izin secara lengkap...' : 'Jelaskan alasan izin/sakit...'
+                          }
+                          className="col-span-3"
+                          rows={3}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3">
+                      <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                        Batal
+                      </Button>
+                      <Button onClick={handleAjukanIzin} disabled={isLoading}>
+                        {isLoading ? 'Mengirim...' : 'Ajukan Izin'}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            )}
+
+            {/* AJUKAN CUTI / LIHAT DETAIL CUTI */}
+            {/* {!renderCutiBanner && (
+              <div className="order-last w-full">
+                {hasAnyCutiPengajuan ? (
+                  // SUDAH ADA PENGAJUAN CUTI - TAMPILKAN TOMBOL LIHAT DETAIL
+                  <Button variant="outline" className="relative w-full" size="lg" onClick={handleLihatDetailCuti}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    Lihat Detail Cuti
+                    {hasPendingCuti && (
+                      <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-xs text-white">
+                        {pengajuanCutiAktif.filter((c) => c.approval_status === 'Pending').length}
+                      </span>
+                    )}
+                  </Button>
+                ) : (
+                  // BELUM ADA PENGAJUAN CUTI - TAMPILKAN TOMBOL AJUKAN
+                  <Dialog open={dialogCutiOpen} onOpenChange={setDialogCutiOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="w-full" size="lg" disabled={isLoading}>
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        Ajukan Cuti
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Form pengajuan cuti</DialogTitle>
+                        <DialogDescription>Ajukan cuti untuk periode tertentu</DialogDescription>
+                      </DialogHeader>
+
+                      <div className="grid w-full grid-cols-2 gap-4">
+                        <div className="w-full">
+                          <Label className="text-right">Tanggal Pengajuan</Label>
+                          <Button variant="outline" className="w-full justify-between font-normal" disabled>
+                            {new Date().toLocaleDateString('id-ID', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })}
+                            <CalendarIcon className="ml-2 h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        <div>
+                          <Label className="text-right">Jenis Cuti</Label>
+                          <Select
+                            value={cutiForm.jenis_cuti}
+                            onValueChange={(value) =>
+                              setCutiForm({
+                                ...cutiForm,
+                                jenis_cuti: value as CutiForm['jenis_cuti'],
+                              })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Pilih jenis cuti" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Cuti Tahunan">Cuti Tahunan</SelectItem>
+                              <SelectItem value="Cuti Besar">Cuti Besar</SelectItem>
+                              <SelectItem value="Cuti Sakit">Cuti Sakit</SelectItem>
+                              <SelectItem value="Cuti Melahirkan">Cuti Melahirkan</SelectItem>
+                              <SelectItem value="Cuti Lainnya">Cuti Lainnya</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label className="text-right">Tanggal Mulai</Label>
+                          <Popover open={tglMulaiOpen} onOpenChange={setTglMulaiOpen}>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" className="w-full justify-between font-normal">
+                                {tglMulai ? tglMulai.toLocaleDateString('id-ID') : 'Pilih tanggal'}
+                                <ChevronDown className="ml-2 h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={tglMulai}
+                                onSelect={(date) => {
+                                  setTglMulai(date);
+                                  setTglMulaiOpen(false);
+                                  if (date) {
+                                    setCutiForm({ ...cutiForm, tgl_mulai: formattedDate(date) });
+                                  }
+                                }}
+                                disabled={(date) => date < new Date()}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+
+                        <div>
+                          <Label className="text-right">Tanggal Selesai</Label>
+                          <Popover open={tglSelesaiOpen} onOpenChange={setTglSelesaiOpen}>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" className="w-full justify-between font-normal">
+                                {tglSelesai ? tglSelesai.toLocaleDateString('id-ID') : 'Pilih tanggal'}
+                                <ChevronDown className="ml-2 h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={tglSelesai}
+                                onSelect={(date) => {
+                                  setTglSelesai(date);
+                                  setTglSelesaiOpen(false);
+                                  if (date) {
+                                    setCutiForm({ ...cutiForm, tgl_selesai: formattedDate(date) });
+                                  }
+                                }}
+                                disabled={(date) => date < new Date()}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      </div>
+
+                      <div className="w-full">
+                        <Label htmlFor="alasan" className="text-right">
+                          Alasan Detail
+                        </Label>
+                        <Textarea
+                          id="alasan"
+                          value={cutiForm.alasan}
+                          onChange={(e) => setCutiForm({ ...cutiForm, alasan: e.target.value })}
+                          placeholder="Jelaskan secara singkat keperluan cuti anda"
+                          className="w-full"
+                          rows={3}
+                        />
+                      </div>
+
+                      <div className="flex justify-end gap-3">
+                        <Button variant="outline" onClick={() => setDialogCutiOpen(false)}>
+                          Batal
+                        </Button>
+                        <Button onClick={handleAjukanCuti} disabled={isLoading}>
+                          {isLoading ? 'Mengirim...' : 'Ajukan Cuti'}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
+            )} */}
+
+            {/* AJUKAN CUTI / LIHAT DETAIL CUTI - FIX */}
+            {!renderCutiBanner && (
+              <div className="order-last flex w-full gap-2">
+                {/* TOMBOL LIHAT DETAIL CUTI (selalu tampil jika ada riwayat) */}
+                {hasAnyCutiPengajuan && (
+                  <Button variant="outline" className="relative flex-1" size="lg" onClick={handleLihatDetailCuti}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    Lihat Cuti
+                    {hasPendingCuti && (
+                      <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-xs text-white">
+                        {pengajuanCutiAktif.filter((c) => c.approval_status === 'Pending').length}
+                      </span>
+                    )}
+                  </Button>
                 )}
 
-                {/* keterangan tanggal pada hari mengajukan izin */}
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label className="text-right">Tanggal</Label>
-                  <div className="col-span-3">
-                    <Button variant="outline" className="w-full justify-between font-normal">
-                      {selectedDate?.toLocaleDateString('id-ID', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
+                {/* TOMBOL AJUKAN CUTI BARU (selalu tampil) */}
+                <Dialog open={dialogCutiOpen} onOpenChange={setDialogCutiOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className={hasAnyCutiPengajuan ? 'flex-1' : 'w-full'} size="lg" disabled={isLoading}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      {hasCheckedInToday ? 'Ajukan Cuti' : 'Ajukan Cuti'}
                     </Button>
-                    <Input
-                      type="hidden"
-                      value={selectedDate ? selectedDate.toISOString().split('T')[0] : ''}
-                      onChange={(e) => {
-                        // Update selectedDate ketika value berubah
-                        if (e.target.value) {
-                          setSelectedDate(new Date(e.target.value));
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Form pengajuan cuti</DialogTitle>
+                      <DialogDescription>Ajukan cuti untuk periode tertentu</DialogDescription>
+                    </DialogHeader>
 
-                {/* Keterangan */}
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="keterangan" className="text-right">
-                    Alasan Detail
-                  </Label>
-                  <Textarea
-                    id="keterangan"
-                    value={izinForm.keterangan}
-                    onChange={(e) => setIzinForm({ ...izinForm, keterangan: e.target.value })}
-                    placeholder={izinForm.tipe === 'Lainnya' ? 'Jelaskan detail alasan izin secara lengkap...' : 'Jelaskan alasan izin/sakit...'}
-                    className="col-span-3"
-                    rows={3}
-                  />
-                </div>
-              </div>
+                    <div className="grid w-full grid-cols-2 gap-4">
+                      <div className="w-full">
+                        <Label className="text-right">Tanggal Pengajuan</Label>
+                        <Button variant="outline" className="w-full justify-between font-normal" disabled>
+                          {new Date().toLocaleDateString('id-ID', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}
+                          <CalendarIcon className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
 
-              <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                  Batal
-                </Button>
-                <Button onClick={handleAjukanIzin} disabled={isLoading}>
-                  {isLoading ? 'Mengirim...' : 'Ajukan Izin'}
-                </Button>
+                      <div>
+                        <Label className="text-right">Jenis Cuti</Label>
+                        <Select
+                          value={cutiForm.jenis_cuti}
+                          onValueChange={(value) =>
+                            setCutiForm({
+                              ...cutiForm,
+                              jenis_cuti: value as CutiForm['jenis_cuti'],
+                            })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Pilih jenis cuti" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Cuti Tahunan">Cuti Tahunan</SelectItem>
+                            <SelectItem value="Cuti Besar">Cuti Besar</SelectItem>
+                            <SelectItem value="Cuti Sakit">Cuti Sakit</SelectItem>
+                            <SelectItem value="Cuti Melahirkan">Cuti Melahirkan</SelectItem>
+                            <SelectItem value="Cuti Lainnya">Cuti Lainnya</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-right">Tanggal Mulai</Label>
+                        <Popover open={tglMulaiOpen} onOpenChange={setTglMulaiOpen}>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-between font-normal">
+                              {tglMulai ? tglMulai.toLocaleDateString('id-ID') : 'Pilih tanggal'}
+                              <ChevronDown className="ml-2 h-4 w-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={tglMulai}
+                              onSelect={(date) => {
+                                setTglMulai(date);
+                                setTglMulaiOpen(false);
+                                if (date) {
+                                  setCutiForm({ ...cutiForm, tgl_mulai: formattedDate(date) });
+                                }
+                              }}
+                              disabled={(date) => date < new Date()}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+
+                      <div>
+                        <Label className="text-right">Tanggal Selesai</Label>
+                        <Popover open={tglSelesaiOpen} onOpenChange={setTglSelesaiOpen}>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-between font-normal">
+                              {tglSelesai ? tglSelesai.toLocaleDateString('id-ID') : 'Pilih tanggal'}
+                              <ChevronDown className="ml-2 h-4 w-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={tglSelesai}
+                              onSelect={(date) => {
+                                setTglSelesai(date);
+                                setTglSelesaiOpen(false);
+                                if (date) {
+                                  setCutiForm({ ...cutiForm, tgl_selesai: formattedDate(date) });
+                                }
+                              }}
+                              disabled={(date) => date < new Date()}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
+
+                    <div className="w-full">
+                      <Label htmlFor="alasan" className="text-right">
+                        Alasan Detail
+                      </Label>
+                      <Textarea
+                        id="alasan"
+                        value={cutiForm.alasan}
+                        onChange={(e) => setCutiForm({ ...cutiForm, alasan: e.target.value })}
+                        placeholder="Jelaskan secara singkat keperluan cuti anda"
+                        className="w-full"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-3">
+                      <Button variant="outline" onClick={() => setDialogCutiOpen(false)}>
+                        Batal
+                      </Button>
+                      <Button onClick={handleAjukanCuti} disabled={isLoading}>
+                        {isLoading ? 'Mengirim...' : 'Ajukan Cuti'}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
-            </DialogContent>
-          </Dialog>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
