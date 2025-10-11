@@ -25,3 +25,21 @@ export type Absensi = {
   updated_at: string;
   user_counts?: number;
 };
+
+export type TotalAbsensi = {
+  hadir: string;
+  telat: string;
+  izin: string;
+  cuti: string;
+  alpha: string;
+  total: string;
+};
+
+export type ChartData = {
+  month: string;
+  hadir: number;
+  telat: number;
+  alpha: number;
+  izin: number;
+  cuti: number;
+}[];

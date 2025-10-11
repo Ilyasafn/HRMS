@@ -28,36 +28,19 @@ class CutiController extends Controller
 
         $user = Auth::user();
     
-    // Custom check untuk Spatie roles
-    $isAdmin = false;
-    
-    // Method 1: Try Spatie first
-    if (method_exists($user, 'hasAnyRole')) {
-        $isAdmin = $user->hasAnyRole(['admin', 'superadmin']);
-    } 
-    // Method 2: Fallback ke custom logic
-    else {
-        // Cek jika ada roles relationship (Spatie)
-        if ($user->relationLoaded('roles')) {
-            $isAdmin = $user->roles->whereIn('name', ['admin', 'superadmin'])->isNotEmpty();
+        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();
+
+        $query = Cuti::with(['user', 'approvedBy']);
+        if (!$isAdmin) {
+            $query->where('user_id', $user->id);
         }
-        // Method 3: Fallback ke role column biasa
-        elseif (property_exists($user, 'role')) {
-            $isAdmin = in_array($user->role, ['admin', 'superadmin']);
+        
+        $cutis = $query->orderBy('created_at', 'desc')->get();
+        
+        $users = [];
+        if ($isAdmin) {
+            $users = User::select('id', 'name')->get();
         }
-    }
-    
-    $query = Cuti::with(['user', 'approvedBy']);
-    if (!$isAdmin) {
-        $query->where('user_id', $user->id);
-    }
-    
-    $cutis = $query->orderBy('created_at', 'desc')->get();
-    
-    $users = [];
-    if ($isAdmin) {
-        $users = User::select('id', 'name')->get();
-    }
 
 
         return Inertia::render('cuti/index', [
@@ -94,13 +77,13 @@ class CutiController extends Controller
         Carbon::parse($validated['tgl_selesai'])
     );
 
-        $tgl_pengajuan = Carbon::parse($validated['tgl_pengajuan'] . ' 12:00:00') // Tambah waktu tengah hari
+        $tgl_pengajuan = Carbon::parse($validated['tgl_pengajuan'] . ' 12:00:00') // waktu tengah hari
         ->timezone('Asia/Makassar')
         ->format('Y-m-d');
-        $tgl_mulai = Carbon::parse($validated['tgl_mulai'] . ' 12:00:00') // Tambah waktu tengah hari
+        $tgl_mulai = Carbon::parse($validated['tgl_mulai'] . ' 12:00:00') // waktu tengah hari
         ->timezone('Asia/Makassar')
         ->format('Y-m-d');
-        $tgl_selesai = Carbon::parse($validated['tgl_selesai'] . ' 12:00:00') // Tambah waktu tengah hari
+        $tgl_selesai = Carbon::parse($validated['tgl_selesai'] . ' 12:00:00') // waktu tengah hari
         ->timezone('Asia/Makassar')
         ->format('Y-m-d');
 
@@ -117,9 +100,7 @@ class CutiController extends Controller
         return redirect()->back()->with('success', 'Cuti berhasil diajukan');
     }
 
-   /**
- * Hitung jumlah hari kerja (update parameter menerima string)
- */
+
 private function calculateWorkingDays(string $start, string $end): int
 {
     $startDate = Carbon::parse($start);
@@ -184,7 +165,6 @@ private function calculateWorkingDays(string $start, string $end): int
             }
 
             try {
-            // ✅ GUNAKAN updateOrCreate UNTUK HANDLE DUPLICATE
             Absensi::updateOrCreate(
                 [
                     'user_id' => $cuti->user_id,
@@ -193,7 +173,7 @@ private function calculateWorkingDays(string $start, string $end): int
                 [
                     'jam_masuk' => null,
                     'jam_keluar' => null,
-                    'status' => 'Izin',
+                    'status' => 'Cuti',
                     'keterangan' => "Cuti: {$cuti->jenis_cuti} - {$cuti->alasan}",
                     'approval_status' => 'Approved',
                     'approved_by' => Auth::id(),

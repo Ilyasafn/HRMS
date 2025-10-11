@@ -2,9 +2,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import StatusBadge from '@/components/ui/status-badge';
 import AppLayout from '@/layouts/app-layout';
+import { SharedData } from '@/types';
 import { Cuti } from '@/types/cuti';
 import { User } from '@/types/user';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { ArrowLeft, Folder, FolderClock } from 'lucide-react';
 import { FC } from 'react';
 import CutiApprovalStatusDialog from './components/cuti-approval-status-dialog';
@@ -12,10 +13,11 @@ import CutiApprovalStatusDialog from './components/cuti-approval-status-dialog';
 type Props = {
   cuti: Cuti;
   user: User;
-  isAdmin: boolean;
 };
 
-const ShowCuti: FC<Props> = ({ cuti, isAdmin }) => {
+const ShowCuti: FC<Props> = ({ cuti }) => {
+  const { permissions } = usePage<SharedData>().props;
+
   return (
     <AppLayout
       breadcrumbs={[
@@ -52,7 +54,7 @@ const ShowCuti: FC<Props> = ({ cuti, isAdmin }) => {
               <CardTitle>{cuti.user?.name}</CardTitle>
               <StatusBadge status={cuti.approval_status} />
             </div>
-            {isAdmin && (
+            {permissions?.canUpdate && (
               <div className="order-2 w-fit">
                 <CutiApprovalStatusDialog cuti={cuti}>
                   <Button variant={'ghost'} size={'icon'}>
@@ -65,7 +67,9 @@ const ShowCuti: FC<Props> = ({ cuti, isAdmin }) => {
           <CardDescription>Tanggal mulai cuti: {cuti.tgl_mulai || '-'}</CardDescription>
           <CardDescription>Tanggal selesai cuti: {cuti.tgl_selesai || '-'}</CardDescription>
           <CardDescription>Jenis cuti: {cuti.jenis_cuti}</CardDescription>
-          <CardDescription>alasan: {cuti.alasan}</CardDescription>
+          <CardDescription>Alasan: {cuti.alasan}</CardDescription>
+          <CardDescription>Sisa cuti tahunan: {cuti.user?.sisa_cuti_tahunan || '-'} hari</CardDescription>
+          <CardDescription>Total cuti diambil: {cuti.user?.total_cuti_diambil || '-'} hari</CardDescription>
         </CardHeader>
       </Card>
     </AppLayout>

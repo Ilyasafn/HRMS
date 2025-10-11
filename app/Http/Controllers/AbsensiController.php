@@ -20,35 +20,39 @@ class AbsensiController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-    {
-        $this->pass("index absensi");
-        
-        $query = Absensi::query()
+{
+    $this->pass("index absensi");
+
+    $user = Auth::user();
+    
+    $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();
+    
+    // Query untuk list tanggal
+    $query = Absensi::query()
         ->selectRaw('tanggal, count(*) as user_counts')
         ->groupBy('tanggal')
         ->orderByDesc('tanggal');
 
-        if($request->filled('name')) {
-            $query->join('users','users.id', '=', 'absensis.user_id')
-                        ->where('name', 'like', '%' . $request->name . '%')
-                        ->selectRaw('tanggal, count(*) as user_counts')
-                        ->groupBy('absensis.tanggal');
-        }
-
-        $data = $query->get();
-
-        return Inertia::render('absensi/index', [
-            'absensis' => $data,
-            'query' => $request->input(),
-            'users' => User::all(),
-            'permissions' => [
-                'canAdd' => $this->user->can("create absensi"),
-                'canShow' => $this->user->can("show absensi"),
-                'canUpdate' => $this->user->can("update absensi"),
-                'canDelete' => $this->user->can("delete absensi"),
-            ]
-        ]);
+    // Filter untuk user biasa - SAMA DENGAN CUTI LOGIC
+    if (!$isAdmin) {
+        $query->where('user_id', $user->id);
     }
+
+    $data = $query->get();
+
+    return Inertia::render('absensi/index', [
+        'absensis' => $data,
+        'query' => $request->input(),
+        'users' => $isAdmin ? User::all() : [],
+        'isAdmin' => $isAdmin,
+        'permissions' => [
+            'canAdd' => $this->user->can("create absensi"),
+            'canShow' => $this->user->can("show absensi"),
+            'canUpdate' => $this->user->can("update absensi"),
+            'canDelete' => $this->user->can("delete absensi"),
+        ]
+    ]);
+}
 
     /**
      * Store a newly created resource in storage.
@@ -89,30 +93,42 @@ class AbsensiController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show( $tanggal)
-    {
-        $this->pass("show absensi");
+   public function show($tanggal)
+{
+    $this->pass("show absensi");
 
-        $absensi = Absensi::whereDate('tanggal', $tanggal)
-        ->with(['user', 'approvedBy'])
-        ->get()
-        ->map(function($item){
-            if($item->approved_status === "Pending") {
-                $item->approved_by = null;
-            }
-            return $item;
-        });
+    $user = Auth::user();
+    
+    // Check admin role 
+    $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();
+    
+    // Query absensi untuk tanggal tertentu
+    $query = Absensi::whereDate('tanggal', $tanggal)
+        ->with(['user', 'approvedBy']);
 
-        return Inertia::render('absensi/show', [
-            'absensis' => $absensi,
-            'tanggal' => $tanggal,
-            'users' => User::all(),
-            'permissions' => [
-                'canUpdate' => $this->user->can("update absensi"),
-                'canDelete' => $this->user->can("delete absensi"),
-            ]
-        ]);
+    // Jika bukan admin, hanya bisa lihat absensi sendiri
+    if (!$isAdmin) {
+        $query->where('user_id', $user->id);
     }
+
+    $absensis = $query->get();
+
+    // Jika user biasa dan tidak ada data absensi di tanggal tersebut, return 403
+    if (!$isAdmin && $absensis->isEmpty()) {
+        abort(403, 'Unauthorized action. Anda tidak memiliki absensi pada tanggal ini.');
+    }
+
+    return Inertia::render('absensi/show', [
+        'absensis' => $absensis,
+        'tanggal' => $tanggal,
+        'users' => $isAdmin ? User::all() : [],
+        'isAdmin' => $isAdmin,
+        'permissions' => [
+            'canUpdate' => $this->user->can("update absensi"),
+            'canDelete' => $this->user->can("delete absensi"),
+        ]
+    ]);
+}
 
     /**
      * Update the specified resource in storage.
@@ -169,15 +185,14 @@ class AbsensiController extends Controller
                 'jam_masuk' => $now->format('H:i:s'),
                 'jam_keluar' => null,
                 'status' => $status,
-                'approval_status' => "Pending",
+                'approval_status' => "Approved",
             ]);
 
             return redirect()->back()->with('success', 'Check-In Berhasil' . $status);
         }
 
-        // ✅ CEK APAKAH SUDAH CHECK-IN TAPI BELUM CHECK-OUT
+        // CheckIn/validation
         if($absensi->jam_masuk && is_null($absensi->jam_keluar)) {
-            // CHECK OUT
             $absensi->update([
                 'jam_keluar' => $now->format('H:i:s'),
             ]);
@@ -185,7 +200,7 @@ class AbsensiController extends Controller
             return redirect()->back()->with('success', 'Check-Out Berhasil');
         }
 
-           // ✅ CEK APAKAH SUDAH CHECK-IN DAN CHECK-OUT
+        // CheckIn/Out validation - Selesai CheckIn/Out
         if($absensi->jam_masuk && $absensi->jam_keluar) {
             return redirect()->back()->with('error', 'Anda sudah melakukan absensi lengkap hari ini!');
         }

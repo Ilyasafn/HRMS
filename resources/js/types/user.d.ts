@@ -16,6 +16,8 @@ export interface User {
   no_telp: string | null;
   tgl_masuk: string;
   status: 'Aktif' | 'Tidak Aktif';
+  sisa_cuti_tahunan: string;
+  total_cuti_diambil: string;
   created_at: string;
   updated_at: string;
   [key: string]: unknown; // This allows for additional properties...

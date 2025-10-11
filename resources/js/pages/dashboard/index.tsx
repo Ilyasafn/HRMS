@@ -1,13 +1,43 @@
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import AppLayout from '@/layouts/app-layout';
 import { SharedData, type BreadcrumbItem } from '@/types';
-import { User } from '@/types/user';
+import { ChartData } from '@/types/absensi';
 import { usePage } from '@inertiajs/react';
 import AbsensiCard from './widget/absensi-card-widget';
+import AdminAbsensiChart from './widget/absensi-chart-widget';
+import RekapAbsensiTable from './widget/absensi-recap-widget';
+import StatsWidget from './widget/stats-widget';
 import UserInfoWidget from './widget/user-info-widget';
 
+type DashboardStats = {
+  total_karyawan: number;
+  total_hadir: number;
+  total_telat: number;
+  total_izin: number;
+  total_cuti: number;
+  total_alpha: number;
+};
+
+type RekapAbsensi = {
+  id: number;
+  name: string;
+  divisi: string;
+  total_hadir: number;
+  total_telat: number;
+  total_izin: number;
+  total_cuti: number;
+  total_alpha: number;
+  total_absensi: number;
+};
+
 type Props = {
-  absensiToday?: Absensi;
-  user: User;
+  absensiHariIni: Absensi;
+  cutiHariIni: [];
+  pengajuanCutiAktif: [];
+  isAdmin: boolean;
+  rekap_absensi?: RekapAbsensi[];
+  dashboard_stats?: DashboardStats;
+  chart_data?: ChartData[];
 };
 
 type Absensi = {
@@ -27,13 +57,39 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Dashboard({ absensiToday }: Props) {
+export default function Dashboard({ absensiHariIni, isAdmin, rekap_absensi, dashboard_stats, chart_data }: Props) {
   const { auth } = usePage<SharedData>().props;
 
   return (
     <AppLayout title="Dashboard" description={`Selamat datang, ${auth.user?.name}`} breadcrumbs={breadcrumbs}>
       <UserInfoWidget />
-      <AbsensiCard absensiHariIni={absensiToday} />
+
+      {/* Admin Dashboard */}
+      {isAdmin && (
+        <div className="space-y-6">
+          {/* Stats Cards */}
+          {dashboard_stats && <StatsWidget stats={dashboard_stats} />}
+
+          {/* Chart */}
+          <AdminAbsensiChart chart_data={chart_data} />
+
+          {/* Table Rekapan Absensi seluruh karyawan */}
+          <RekapAbsensiTable rekap_absensi={rekap_absensi} />
+        </div>
+      )}
+
+      {isAdmin ? (
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="item-1">
+            <AccordionTrigger>Absensi Hari Ini</AccordionTrigger>
+            <AccordionContent>
+              <AbsensiCard absensiHariIni={absensiHariIni} />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      ) : (
+        <AbsensiCard absensiHariIni={absensiHariIni} />
+      )}
     </AppLayout>
   );
 }

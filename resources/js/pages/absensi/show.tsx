@@ -97,13 +97,13 @@ const ShowAbsensi: FC<Props> = ({ absensis, users }) => {
                 <StatusBadge status={absensi.approval_status} />
               </TableCell>
               <TableCell>
-                <AbsensiApprovalStatusDialog absensi={absensi}>
-                  <Button variant={'ghost'} size={'icon'}>
-                    {absensi?.approval_status === 'Pending' ? <FolderClock /> : <Folder />}
-                  </Button>
-                </AbsensiApprovalStatusDialog>
                 {permissions?.canUpdate && (
                   <>
+                    <AbsensiApprovalStatusDialog absensi={absensi}>
+                      <Button variant={'ghost'} size={'icon'}>
+                        {absensi?.approval_status === 'Pending' ? <FolderClock /> : <Folder />}
+                      </Button>
+                    </AbsensiApprovalStatusDialog>
                     <AbsensiUploadMediaSheet absensi={absensi}>
                       <Button variant={'ghost'} size={'icon'}>
                         <Image />
