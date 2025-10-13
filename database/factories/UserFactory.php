@@ -36,7 +36,7 @@ class UserFactory extends Factory
             'alamat' => fake()->address(),
             'no_telp' => fake()->phoneNumber(),
             'tgl_masuk' => fake()->dateTime(),
-            'status' => fake()->randomElement(['Aktif', 'Tidak Aktif']),
+            'status' => 'Aktif',
             'remember_token' => Str::random(10),
         ];
     }

@@ -19,10 +19,10 @@ return new class extends Migration
             $table->string('password');
             $table->string('nik', 8)->nullable()->unique();
             $table->foreignId('divisi_id')->nullable()->constrained('divisis')->nullOnDelete();
-            $table->dateTime('tgl_lahir')->nullable();
             $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan'])->nullable();
             $table->string('alamat')->nullable();
             $table->string('no_telp')->nullable();
+            $table->string('tgl_lahir')->nullable();
             $table->string('tgl_masuk')->nullable();
             $table->enum("status", ["Aktif", "Tidak Aktif"])->default("Aktif");
             $table->string('sisa_cuti_tahunan')->default(12);

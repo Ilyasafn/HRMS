@@ -90,25 +90,65 @@ class DashboardController extends Controller
     
     private function getDashboardStats()
     {
+        $today = Carbon::now()->format('Y-m-d');
+        $currentMonth = Carbon::now()->month;
+        $currentYear = Carbon::now()->year;
+
         $totalKaryawan = User::whereHas('roles', function($q) {
             $q->whereNotIn('name', ['superadmin']);
         })
         ->where('status', 'Aktif')
         ->count();
 
-        $totalHadir = Absensi::whereIn('status', ['Hadir', 'Telat'])->count();
-        $totalIzin = Absensi::whereIn('status', ['Sakit', 'Izin', 'Lainnya'])->count();
-        $totalCuti = Absensi::where('status', 'Cuti')->count();
-        $totalAlpha = Absensi::where('status', 'Alpha')->count();
-
         return [
-            'total_karyawan' => $totalKaryawan,
-            'total_hadir' => $totalHadir,
-            'total_izin' => $totalIzin,
-            'total_cuti' => $totalCuti,
-            'total_alpha' => $totalAlpha,
-        ];
-    }
+            // Stats per Hari ini
+            'hari_ini'=> [
+            'hadir' =>Absensi::whereDate('tanggal', $today)
+            ->whereIn('status', ['Hadir', 'Telat'])
+            ->count(),
+            'izin' => Absensi::whereDate('tanggal', $today)
+            ->whereIn('status', ['Sakit', 'Izin', 'Lainnya'])
+            ->count(),
+            'cuti' => Absensi::whereDate('tanggal', $today)
+            ->where('status', 'Cuti')
+            ->count(),
+            'alpha' => $this->getAlphaHariIni($today),
+            ],
+
+            // Stats per Bulan ini
+            'all_time' => [
+            'hadir' => Absensi::whereYear('tanggal', $currentYear)
+                ->whereMonth('tanggal', $currentMonth)
+                ->whereIn('status', ['Hadir', 'Telat'])->count(),
+            'izin' => Absensi::whereYear('tanggal', $currentYear)
+                ->whereMonth('tanggal', $currentMonth)
+                ->whereIn('status', ['Sakit', 'Izin', 'Lainnya'])->count(),
+            'cuti' => Absensi::whereYear('tanggal', $currentYear)
+                ->whereMonth('tanggal', $currentMonth)
+                ->where('status', 'Cuti')->count(),
+            'alpha' => Absensi::whereYear('tanggal', $currentYear)
+                ->whereMonth('tanggal', $currentMonth)
+                ->where('status', 'Alpha')->count(),
+            'total_karyawan' => User::whereHas('roles', function($q) {
+                $q->whereNotIn('name', ['superadmin']);
+            })
+            ->where('status', 'Aktif')
+            ->count(),
+        ]
+    ];
+}
+
+private function getAlphaHariIni($today)
+{
+    // Hitung karyawan aktif yang tidak ada absensi hari ini
+    return User::where('status', 'Aktif')
+        ->whereHas('roles', function($q) {
+            $q->whereNotIn('name', ['superadmin']);
+        })
+        ->whereDoesntHave('absensis', function($q) use ($today) {
+            $q->whereDate('tanggal', $today);
+        })->count();
+}
 
     private function getChartAbsensiData()
 {

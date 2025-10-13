@@ -79,6 +79,7 @@ export default function AbsensiCard({
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [tglMulai, setTglMulai] = useState<Date | undefined>(undefined);
   const [tglSelesai, setTglSelesai] = useState<Date | undefined>(undefined);
+  const [isCutoffTime, setIsCutoffTime] = useState(false);
 
   const [izinForm, setIzinForm] = useState<IzinForm>({
     tanggal: new Date().toISOString().split('T')[0],
@@ -93,6 +94,31 @@ export default function AbsensiCard({
     jenis_cuti: 'Cuti Tahunan',
     alasan: '',
   });
+
+  useEffect(() => {
+    const checkCutoff = () => {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+
+      // Cutoff tombol absen kalo udah lewat jam 17:59
+      if (hours >= 17 || (hours === 17 && minutes >= 59)) {
+        setIsCutoffTime(true);
+      } else {
+        setIsCutoffTime(false);
+      }
+    };
+
+    checkCutoff();
+    const interval = setInterval(checkCutoff, 60 * 1000); // Check setiap menit
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (isCutoffTime) {
+      toast.info('Waktu absensi hari ini sudah berakhir.');
+    }
+  }, [isCutoffTime]);
 
   useEffect(() => {
     // sync props -> local state when props change (Inertia navigation)
@@ -487,9 +513,15 @@ export default function AbsensiCard({
         <div className="grid w-full grid-rows-1 gap-2">
           {/* Main Action Button */}
           {!renderCutiBanner && !(hasCheckedInToday && ['Sakit', 'Izin', 'Lainnya'].includes(absensi?.status || '')) && (
-            <Button onClick={handleAbsensi} disabled={buttonConfig.disabled || isLoading} variant={buttonConfig.variant} size="lg" className="w-full">
+            <Button
+              onClick={handleAbsensi}
+              disabled={buttonConfig.disabled || isLoading || isCutoffTime}
+              variant={buttonConfig.variant}
+              size="lg"
+              className="w-full"
+            >
               {buttonConfig.icon}
-              {isLoading ? 'Memproses...' : buttonConfig.text}
+              {isCutoffTime ? 'Waktu absensi telah berakhir' : isLoading ? 'Memproses...' : buttonConfig.text}
             </Button>
           )}
 
@@ -502,11 +534,13 @@ export default function AbsensiCard({
               <div className="order-first w-full">
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full" size="lg" disabled={isLoading || hasCheckedInToday}>
+                    <Button variant="outline" className="w-full" size="lg" disabled={isLoading || hasCheckedInToday || isCutoffTime}>
                       <Plus className="mr-2 h-4 w-4" />
-                      {absensi && ['Sakit', 'Izin', 'Lainnya'].includes(absensi.status)
-                        ? 'Anda telah mengajukan izin'
-                        : 'Ajukan Izin, Sakit atau lainnya'}
+                      {isCutoffTime
+                        ? 'Waktu absensi telah berakhir'
+                        : absensi && ['Sakit', 'Izin', 'Lainnya'].includes(absensi.status)
+                          ? 'Anda telah mengajukan izin'
+                          : 'Ajukan Izin, Sakit atau lainnya'}
                     </Button>
                   </DialogTrigger>
 

@@ -130,7 +130,7 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
               </FormControl>
               <FormControl label="Jenis kelamin">
                 <Select value={data.jenis_kelamin ?? ''} onValueChange={(value: 'Laki-laki' | 'Perempuan' | '') => setData('jenis_kelamin', value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Pilih jenis kelamin" />
                   </SelectTrigger>
                   <SelectContent>
@@ -144,7 +144,7 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormControl label="Divisi">
                 <Select value={data.divisi_id.toString()} onValueChange={(value) => setData('divisi_id', Number(value))}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Pilih Divisi" />
                   </SelectTrigger>
                   <SelectContent>
@@ -158,7 +158,7 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
               </FormControl>
               <FormControl label="Jabatan">
                 <Select value={data.roles?.[0] ?? ''} onValueChange={(value) => setData('roles', [value])}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Pilih Jabatan" />
                   </SelectTrigger>
                   <SelectContent>
@@ -173,10 +173,11 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* Tgl Lahir */}
               <FormControl label="Tanggal lahir">
                 <Popover open={tglLahirOpen} onOpenChange={setTglLahirOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" id="date" className="w-48 justify-between font-normal">
+                    <Button variant="outline" className="w-48 justify-between font-normal">
                       {tglLahir ? tglLahir.toLocaleDateString() : 'Select date'}
                       <ChevronDownIcon />
                     </Button>
@@ -198,10 +199,12 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
                   </PopoverContent>
                 </Popover>
               </FormControl>
+
+              {/* Tgl Masuk */}
               <FormControl label="Tanggal masuk">
                 <Popover open={tglMasukOpen} onOpenChange={setTglMasukOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" id="date" className="w-48 justify-between font-normal">
+                    <Button variant="outline" className="w-48 justify-between font-normal">
                       {tglMasuk ? tglMasuk.toLocaleDateString() : 'Select date'}
                       <ChevronDownIcon />
                     </Button>

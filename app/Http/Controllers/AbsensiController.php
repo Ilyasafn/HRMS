@@ -167,6 +167,12 @@ class AbsensiController extends Controller
         $now = Carbon::now();
         $status = $this->determineStatusMasuk($now);
 
+        if (!Auth::user()->hasRole(['admin', 'superadmin'])) {
+            $cutoff = Carbon::createFromTime(17, 59, 0, 'Asia/Makassar');
+            if (Carbon::now('Asia/Makassar')->greaterThan($cutoff)) {
+                return back()->with('error', 'Waktu absensi sudah berakhir, tidak bisa check-in.');
+        }
+}
 
         $absensi = Absensi::where('user_id', $userId)
         ->whereDate('tanggal', $today)
@@ -185,7 +191,7 @@ class AbsensiController extends Controller
                 'jam_masuk' => $now->format('H:i:s'),
                 'jam_keluar' => null,
                 'status' => $status,
-                'approval_status' => "Approved",
+                'approval_status' => "Pending",
             ]);
 
             return redirect()->back()->with('success', 'Check-In Berhasil' . $status);

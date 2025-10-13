@@ -4,8 +4,6 @@ import { ChartData } from '@/types/absensi';
 import { FC } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis } from 'recharts';
 
-
-
 type Props = {
   chart_data?: ChartData[];
 };
@@ -46,7 +44,7 @@ const AdminAbsensiChart: FC<Props> = ({ chart_data = [] }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Rekap Absensi Per Bulan</CardTitle>
+        <CardTitle>Rekap Absensi Bulanan</CardTitle>
         <CardDescription>Statistik absensi semua karyawan tahun {new Date().getFullYear()}</CardDescription>
       </CardHeader>
       <CardContent>

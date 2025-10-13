@@ -27,7 +27,7 @@ class AbsensiSeeder extends Seeder
                 'jam_keluar' => $checkout->format('H:i:s'), // random sore
                 'status' => $status,
                 'keterangan' => fake()->sentence(),
-                'approval_status' => fake()->randomElement(['Pending', 'Approved', 'Rejected']),
+                'approval_status' => 'Approved',
                 'approved_by' => User::pluck('id')->toArray()[0],
                 'approved_at' => Carbon::now()->addHours(rand(1, 3)),
             ]

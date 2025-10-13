@@ -18,10 +18,11 @@ class UserSeeder extends Seeder
             'name' => 'Super administrator',
             'email' => 'admin@gmail.com',
             'password' => 'password',
+            'status' => 'aktif'
         ]);
         $superadmin->assignRole('superadmin');
 
-        User::factory(5)->create()->each(function ($user) {
+        User::factory(10)->create()->each(function ($user) {
             $user->assignRole('user');
         });
     }

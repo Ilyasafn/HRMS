@@ -67,26 +67,22 @@ const ShowUser: FC<Props> = ({ user, total_absensi, chart_data }) => {
         </>
       }
     >
-      <div className="grid grid-rows-2 gap-4 md:grid-flow-col">
+      <div className="grid grid-cols-1 grid-rows-2 gap-4 md:grid-cols-3">
         {/* Informasi Pribadi */}
-        <Card className="md:col-span-12 md:row-span-2">
+        <Card className="col-span-2 row-span-2">
           <CardHeader>
             <CardTitle className="mb-1.5">Informasi Pribadi</CardTitle>
             <Separator />
-            <div className="grid grid-rows-2 md:grid-flow-col">
-              <div>
-                <CardDescription>Email: {user.email}</CardDescription>
-                <CardDescription>Alamat: {user.alamat}</CardDescription>
-                <CardDescription>No. Telepon: {user.no_telp}</CardDescription>
-                <CardDescription>Jenis Kelamin: {user.jenis_kelamin}</CardDescription>
-                <CardDescription>Tanggal Lahir: {user.tgl_lahir}</CardDescription>
-              </div>
-            </div>
+            <CardDescription>Email: {user.email}</CardDescription>
+            <CardDescription>Alamat: {user.alamat}</CardDescription>
+            <CardDescription>No. Telepon: {user.no_telp}</CardDescription>
+            <CardDescription>Jenis Kelamin: {user.jenis_kelamin}</CardDescription>
+            <CardDescription>Tanggal Lahir: {user.tgl_lahir}</CardDescription>
           </CardHeader>
         </Card>
 
         {/* Informasi Karyawan */}
-        <Card className="col-span-1 row-span-1">
+        <Card className="">
           <CardHeader>
             <div className="flex items-center">
               <div className="flex-grow">
@@ -105,7 +101,7 @@ const ShowUser: FC<Props> = ({ user, total_absensi, chart_data }) => {
         </Card>
 
         {/* Informasi Rekapan Absensi */}
-        <Card className="colspan-1 row-span-1">
+        <Card className="">
           <CardHeader>
             <div className="flex items-center">
               <div className="flex-grow">
@@ -136,7 +132,7 @@ const ShowUser: FC<Props> = ({ user, total_absensi, chart_data }) => {
         </Card>
       </div>
 
-      {/* Rekap Absensi */}
+      {/* Charts Rekap Absensi */}
       <Card className="">
         <CardHeader>
           <CardTitle>Rekap Absensi</CardTitle>
