@@ -15,7 +15,7 @@ class PayrollFactory extends Factory
     {
         return [
             'user_id' => User::pluck('id')->random(),
-            'periode' => fake()->dateTimeBetween('-1 day', 'now'),
+            'periode' => now()->format('Y-m'),
             'gaji_pokok' => fake()->numberBetween(1000000, 5000000),
             'tunjangan' => fake()->numberBetween(1000000, 5000000),
             'potongan' => fake()->numberBetween(0, 0),

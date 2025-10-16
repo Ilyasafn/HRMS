@@ -32,10 +32,15 @@ class CutiController extends Controller
 
         $query = Cuti::with(['user', 'approvedBy']);
         if (!$isAdmin) {
-            $query->where('user_id', $user->id);
+            $query->where('user_id', $user->id)
+            ;
         }
         
-        $cutis = $query->orderBy('created_at', 'desc')->get();
+        $cutis = $query->orderBy('created_at', 'desc')
+        ->whereHas('user.roles', function($q) {
+                $q->whereNotIn('name', ['superadmin']); // Exclude superadmin
+        })
+        ->get();
         
         $users = [];
         if ($isAdmin) {

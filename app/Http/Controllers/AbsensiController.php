@@ -31,7 +31,10 @@ class AbsensiController extends Controller
     $query = Absensi::query()
         ->selectRaw('tanggal, count(*) as user_counts')
         ->groupBy('tanggal')
-        ->orderByDesc('tanggal');
+        ->orderByDesc('tanggal')
+        ->whereHas('user.roles', function($q) {
+                $q->whereNotIn('name', ['superadmin']); // Exclude superadmin
+            });
 
     // Filter untuk user biasa - SAMA DENGAN CUTI LOGIC
     if (!$isAdmin) {
@@ -104,7 +107,10 @@ class AbsensiController extends Controller
     
     // Query absensi untuk tanggal tertentu
     $query = Absensi::whereDate('tanggal', $tanggal)
-        ->with(['user', 'approvedBy']);
+        ->with(['user', 'approvedBy'])
+        ->whereHas('user.roles', function($q) {
+                $q->whereNotIn('name', ['superadmin']); // Exclude superadmin
+            });
 
     // Jika bukan admin, hanya bisa lihat absensi sendiri
     if (!$isAdmin) {

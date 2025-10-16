@@ -32,7 +32,10 @@ class PayrollController extends Controller
         ->selectRaw('COUNT(id) as jumlah_karyawan')
         ->selectRaw('SUM(total_gaji) as total_gaji')
         ->groupBy('periode_bulan')
-        ->orderByDesc('periode_bulan');
+        ->orderByDesc('periode_bulan')
+        ->whereHas('user.roles', function($q) {
+                $q->whereNotIn('name', ['superadmin']); // Exclude superadmin
+            });
 
          if (!$isAdmin) {
             $query->where('user_id', $user->id);
@@ -148,7 +151,10 @@ class PayrollController extends Controller
         
 
         $query = Payroll::with(['user.roles'])
-            ->where('periode', 'LIKE', $periode . '%');
+            ->where('periode', 'LIKE', $periode . '%')
+            ->whereHas('user.roles', function($q) {
+                $q->whereNotIn('name', ['superadmin']); // Exclude superadmin
+            });
         
             // Log::info('Payrolls for periode ' . $periode . ':', [
         //     'count' => $payrolls->count(),
