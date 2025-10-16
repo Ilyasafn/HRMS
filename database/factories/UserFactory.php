@@ -3,9 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Divisi;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -23,23 +25,30 @@ class UserFactory extends Factory
      * @return array<string, mixed>
      */
     public function definition(): array
-    {
-        return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'nik' => fake()->unique()->numerify('########'), // NIK = 8 digit, 2 angka bln masuk, 2 angka thn masuk, 2 angka divisi_id, 2 angka terakhir urutan masuk
-            'divisi_id' => Divisi::pluck('id')->random(),
-            'tgl_lahir' => fake()->dateTime(),
-            'jenis_kelamin' => fake()->randomElement(['Laki-laki', 'Perempuan']),
-            'alamat' => fake()->address(),
-            'no_telp' => fake()->phoneNumber(),
-            'tgl_masuk' => fake()->dateTime(),
-            'status' => 'Aktif',
-            'remember_token' => Str::random(10),
-        ];
-    }
+  {
+    // Ambil role random kecuali superadmin
+    // $role = Role::whereNot('name', 'superadmin')->inRandomOrder()->first();
+    $role = Role::where('name', 'staff')->first();
+
+    return [
+        'name' => fake()->name(),
+        'email' => fake()->unique()->safeEmail(),
+        'email_verified_at' => now(),
+        'password' => static::$password ??= Hash::make('password'),
+        'nik' => fake()->unique()->numerify('########'),
+        'divisi_id' => Divisi::pluck('id')->random(),
+        'tgl_lahir' => fake()->date(),
+        'tgl_masuk' => fake()->date(),
+        'jenis_kelamin' => fake()->randomElement(['Laki-laki', 'Perempuan']),
+        'alamat' => fake()->address(),
+        'no_telp' => fake()->phoneNumber(),
+        'status' => 'Aktif',
+        // Ambil custom gaji dari role
+        'custom_gaji_pokok' => $role?->gaji_pokok,
+        'custom_tunjangan' => $role?->tunjangan,
+        'remember_token' => Str::random(10),
+    ];
+}
 
     /**
      * Indicate that the model's email address should be unverified.

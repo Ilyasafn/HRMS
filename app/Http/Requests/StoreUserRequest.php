@@ -34,6 +34,8 @@ class StoreUserRequest extends FormRequest
             'tgl_masuk' => 'nullable|date',
             'jenis_kelamin' => 'nullable|in:Laki-laki,Perempuan',
             'status' => 'nullable|in:Aktif,Tidak Aktif',
+            'custom_gaji_pokok' => 'nullable|min:0',
+            'custom_tunjangan' => 'nullable|min:0',
             'password' => 'required|confirmed',
         ];
     }
@@ -52,6 +54,8 @@ class StoreUserRequest extends FormRequest
             'tgl_masuk.date' => 'Tanggal masuk tidak valid.',
             'jenis_kelamin.in' => 'Jenis kelamin harus Laki-laki atau Perempuan.',
             'status.in' => 'Status harus Aktif atau Tidak Aktif.',
+            'custom_gaji_pokok.min' => 'Gaji pokok minimal 0.',
+            'custom_tunjangan.min' => 'Tunjangan minimal 0.',
             'password.required' => 'Password wajib diisi.',
             'password.confirmed' => 'Konfirmasi password tidak sesuai.',
         ];

@@ -93,7 +93,7 @@ class AbsensiController extends Controller
     /**
      * Display the specified resource.
      */
-   public function show($tanggal)
+   public function showByTanggal($tanggal)
 {
     $this->pass("show absensi");
 

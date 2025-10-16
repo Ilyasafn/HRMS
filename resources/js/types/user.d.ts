@@ -18,6 +18,8 @@ export interface User {
   status: 'Aktif' | 'Tidak Aktif';
   sisa_cuti_tahunan: string;
   total_cuti_diambil: string;
+  custom_gaji_pokok: string;
+  custom_tunjangan: string;
   created_at: string;
   updated_at: string;
   [key: string]: unknown; // This allows for additional properties...

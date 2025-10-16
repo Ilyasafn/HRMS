@@ -53,6 +53,8 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
     jenis_kelamin: user?.jenis_kelamin ?? '',
     tgl_masuk: user?.tgl_masuk ?? '',
     status: user?.status ?? 'Aktif',
+    gaji_pokok: user?.custom_gaji_pokok ?? '',
+    tunjangan: user?.custom_tunjangan ?? '',
     password: user ? undefined : '',
     password_confirmation: user ? undefined : '',
     roles: user?.roles?.map((r) => r.name) ?? [],
@@ -71,6 +73,7 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
 
   const handleSubmit = () => {
     if (purpose === 'create' || purpose === 'duplicate') {
+      console.log('gaji pokok:', data.gaji_pokok, 'tunjangan:', data.tunjangan);
       post(route('user.store'), {
         preserveScroll: true,
         onSuccess: () => {
@@ -93,182 +96,196 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{capitalizeWords(purpose)} data user</DialogTitle>
-          <DialogDescription>Form untuk {purpose} data user</DialogDescription>
-        </DialogHeader>
-        <ScrollArea className="flex-1 overflow-y-auto">
-          <form
-            className="space-y-3.5 px-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
-          >
-            <FormControl label="Nama karyawan">
-              <Input type="text" placeholder="Name" value={data.name} onChange={(e) => setData('name', e.target.value)} />
-            </FormControl>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <FormControl label="Email address">
-                <Input type="email" placeholder="username@domain.com" value={data.email} onChange={(e) => setData('email', e.target.value)} />
-              </FormControl>
-              <FormControl label="Handphone">
-                <Input type="text" placeholder="08xxxxxxxxxx" value={data.no_telp} onChange={(e) => setData('no_telp', e.target.value)} />
-              </FormControl>
-            </div>
-
-            <FormControl label="Alamat">
-              <Textarea placeholder="Alamat" value={data.alamat ?? ''} onChange={(e) => setData('alamat', e.target.value)} />
-            </FormControl>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <FormControl label="NIK (Nomor Induk Karyawan)">
-                <Input type="text" placeholder="NIK" value={data.nik} onChange={(e) => setData('nik', e.target.value)} />
-              </FormControl>
-              <FormControl label="Jenis kelamin">
-                <Select value={data.jenis_kelamin ?? ''} onValueChange={(value: 'Laki-laki' | 'Perempuan' | '') => setData('jenis_kelamin', value)}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Pilih jenis kelamin" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Laki-laki">Laki-laki</SelectItem>
-                    <SelectItem value="Perempuan">Perempuan</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormControl>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <FormControl label="Divisi">
-                <Select value={data.divisi_id.toString()} onValueChange={(value) => setData('divisi_id', Number(value))}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Pilih Divisi" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {divisis.map((divisi) => (
-                      <SelectItem key={divisi.id} value={divisi.id.toString()}>
-                        {divisi.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormControl>
-              <FormControl label="Jabatan">
-                <Select value={data.roles?.[0] ?? ''} onValueChange={(value) => setData('roles', [value])}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Pilih Jabatan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roles.map((r) => (
-                      <SelectItem key={r.id} value={r.name}>
-                        {r.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormControl>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {/* Tgl Lahir */}
-              <FormControl label="Tanggal lahir">
-                <Popover open={tglLahirOpen} onOpenChange={setTglLahirOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-48 justify-between font-normal">
-                      {tglLahir ? tglLahir.toLocaleDateString() : 'Select date'}
-                      <ChevronDownIcon />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={tglLahir}
-                      captionLayout="dropdown"
-                      onSelect={(date) => {
-                        setTglLahir(date);
-                        setTglLahirOpen(false);
-                        if (date) {
-                          const formatted = date.toISOString().split('T')[0];
-                          setData('tgl_lahir', formatted);
-                        }
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
+      <ScrollArea>
+        <DialogTrigger asChild>{children}</DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{capitalizeWords(purpose)} data user</DialogTitle>
+            <DialogDescription>Form untuk {purpose} data user</DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="flex-1 overflow-y-auto">
+            <form
+              className="space-y-3.5 px-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+            >
+              <FormControl label="Nama karyawan">
+                <Input type="text" placeholder="Name" value={data.name} onChange={(e) => setData('name', e.target.value)} />
               </FormControl>
 
-              {/* Tgl Masuk */}
-              <FormControl label="Tanggal masuk">
-                <Popover open={tglMasukOpen} onOpenChange={setTglMasukOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-48 justify-between font-normal">
-                      {tglMasuk ? tglMasuk.toLocaleDateString() : 'Select date'}
-                      <ChevronDownIcon />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={tglMasuk}
-                      captionLayout="dropdown"
-                      onSelect={(date) => {
-                        setTglMasuk(date);
-                        setTglMasukOpen(false);
-                        if (date) {
-                          const formatted = date.toISOString().split('T')[0];
-                          setData('tgl_masuk', formatted);
-                        }
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </FormControl>
-            </div>
-
-            {purpose == 'create' && (
-              <>
-                <FormControl label="Password">
-                  <Input type="password" placeholder="User password" value={data.password} onChange={(e) => setData('password', e.target.value)} />
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <FormControl label="Email address">
+                  <Input type="email" placeholder="username@domain.com" value={data.email} onChange={(e) => setData('email', e.target.value)} />
                 </FormControl>
-                <FormControl label="Password confirmation">
-                  <Input
-                    type="password"
-                    placeholder="Rewrite user password"
-                    value={data.password_confirmation}
-                    onChange={(e) => setData('password_confirmation', e.target.value)}
-                  />
+                <FormControl label="Handphone">
+                  <Input type="text" placeholder="08xxxxxxxxxx" value={data.no_telp} onChange={(e) => setData('no_telp', e.target.value)} />
                 </FormControl>
-              </>
-            )}
-            {purpose == 'edit' && (
-              <>
-                <FormControl label="Status">
-                  <Select value={data.status.toString()} onValueChange={(value: 'Aktif' | 'Tidak Aktif') => setData('status', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih Status" />
+              </div>
+
+              <FormControl label="Alamat">
+                <Textarea placeholder="Alamat" value={data.alamat ?? ''} onChange={(e) => setData('alamat', e.target.value)} />
+              </FormControl>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <FormControl label="NIK (Nomor Induk Karyawan)">
+                  <Input type="text" placeholder="NIK" value={data.nik} onChange={(e) => setData('nik', e.target.value)} />
+                </FormControl>
+                <FormControl label="Jenis kelamin">
+                  <Select value={data.jenis_kelamin ?? ''} onValueChange={(value: 'Laki-laki' | 'Perempuan' | '') => setData('jenis_kelamin', value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Pilih jenis kelamin" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Aktif">Aktif</SelectItem>
-                      <SelectItem value="Tidak Aktif">Tidak Aktif</SelectItem>
+                      <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                      <SelectItem value="Perempuan">Perempuan</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormControl>
-              </>
-            )}
-          </form>
-        </ScrollArea>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant={'outline'}>
-              <X /> Batal
-            </Button>
-          </DialogClose>
-          <SubmitButton onClick={handleSubmit} label={`${capitalizeWords(purpose)} user`} loading={processing} disabled={processing} />
-        </DialogFooter>
-      </DialogContent>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <FormControl label="Divisi">
+                  <Select value={data.divisi_id.toString()} onValueChange={(value) => setData('divisi_id', Number(value))}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Pilih Divisi" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {divisis.map((divisi) => (
+                        <SelectItem key={divisi.id} value={divisi.id.toString()}>
+                          {divisi.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormControl label="Jabatan">
+                  <Select value={data.roles?.[0] ?? ''} onValueChange={(value) => setData('roles', [value])}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Pilih Jabatan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((r) => (
+                        <SelectItem key={r.id} value={r.name}>
+                          {r.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+              </div>
+
+              {/* Gaji Pokok */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <FormControl label="Gaji Pokok">
+                  <Input type="text" placeholder="Isi gaji pokok" value={data.gaji_pokok} onChange={(e) => setData('gaji_pokok', e.target.value)} />
+                </FormControl>
+
+                {/* Tunjangan */}
+                <FormControl label="Tunjangan">
+                  <Input type="text" placeholder="Isi tunjangan" value={data.tunjangan} onChange={(e) => setData('tunjangan', e.target.value)} />
+                </FormControl>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {/* Tgl Lahir */}
+                <FormControl label="Tanggal lahir">
+                  <Popover open={tglLahirOpen} onOpenChange={setTglLahirOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-48 justify-between font-normal">
+                        {tglLahir ? tglLahir.toLocaleDateString() : 'Select date'}
+                        <ChevronDownIcon />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={tglLahir}
+                        captionLayout="dropdown"
+                        onSelect={(date) => {
+                          setTglLahir(date);
+                          setTglLahirOpen(false);
+                          if (date) {
+                            const formatted = date.toISOString().split('T')[0];
+                            setData('tgl_lahir', formatted);
+                          }
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </FormControl>
+
+                {/* Tgl Masuk */}
+                <FormControl label="Tanggal masuk">
+                  <Popover open={tglMasukOpen} onOpenChange={setTglMasukOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-48 justify-between font-normal">
+                        {tglMasuk ? tglMasuk.toLocaleDateString() : 'Select date'}
+                        <ChevronDownIcon />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={tglMasuk}
+                        captionLayout="dropdown"
+                        onSelect={(date) => {
+                          setTglMasuk(date);
+                          setTglMasukOpen(false);
+                          if (date) {
+                            const formatted = date.toISOString().split('T')[0];
+                            setData('tgl_masuk', formatted);
+                          }
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </FormControl>
+              </div>
+
+              {purpose == 'create' && (
+                <>
+                  <FormControl label="Password">
+                    <Input type="password" placeholder="User password" value={data.password} onChange={(e) => setData('password', e.target.value)} />
+                  </FormControl>
+                  <FormControl label="Password confirmation">
+                    <Input
+                      type="password"
+                      placeholder="Rewrite user password"
+                      value={data.password_confirmation}
+                      onChange={(e) => setData('password_confirmation', e.target.value)}
+                    />
+                  </FormControl>
+                </>
+              )}
+              {purpose == 'edit' && (
+                <>
+                  <FormControl label="Status">
+                    <Select value={data.status.toString()} onValueChange={(value: 'Aktif' | 'Tidak Aktif') => setData('status', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Aktif">Aktif</SelectItem>
+                        <SelectItem value="Tidak Aktif">Tidak Aktif</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                </>
+              )}
+            </form>
+          </ScrollArea>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant={'outline'}>
+                <X /> Batal
+              </Button>
+            </DialogClose>
+            <SubmitButton onClick={handleSubmit} label={`${capitalizeWords(purpose)} user`} loading={processing} disabled={processing} />
+          </DialogFooter>
+        </DialogContent>
+      </ScrollArea>
     </Dialog>
   );
 };

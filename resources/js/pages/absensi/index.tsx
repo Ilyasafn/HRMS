@@ -139,7 +139,7 @@ const AbsensiList: FC<Props> = ({ absensis, users, query }) => {
                 <TableCell className="text-center">{absensi?.user_counts ?? 0}</TableCell>
                 <TableCell>
                   <Button variant={'ghost'} size={'icon'}>
-                    <Link href={route('absensi.show', { tanggal: String(absensi.tanggal) })}>
+                    <Link href={route('absensi.tanggal.show', { tanggal: String(absensi.tanggal) })}>
                       <Folder />
                     </Link>
                   </Button>

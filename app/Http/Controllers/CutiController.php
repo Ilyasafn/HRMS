@@ -42,7 +42,6 @@ class CutiController extends Controller
             $users = User::select('id', 'name')->get();
         }
 
-
         return Inertia::render('cuti/index', [
             'cutis' => $cutis,
             'query' => $request->query(),
@@ -202,8 +201,8 @@ private function calculateWorkingDays(string $start, string $end): int
         $cuti = Cuti::create([
             'user_id' => Auth::id(),
             'tgl_pengajuan' => date('Y-m-d'),
-            'tgl_mulai' => $validated['tgl_mulai'], // ← DATA ASLI
-            'tgl_selesai' => $validated['tgl_selesai'], // ← DATA ASLI
+            'tgl_mulai' => $validated['tgl_mulai'], 
+            'tgl_selesai' => $validated['tgl_selesai'], 
             'jumlah_hari' => $this->calculateWorkingDays(
                 $validated['tgl_mulai'],
                 $validated['tgl_selesai']

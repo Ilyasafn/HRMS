@@ -12,6 +12,7 @@ use App\Models\Divisi;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 
@@ -26,7 +27,7 @@ class UserController extends Controller
 
         $data = User::query()
             ->with(['media', 'roles', 'divisi', 'absensis'])
-             ->whereHas('roles', function($q) {
+            ->whereHas('roles', function($q) {
                 $q->whereNotIn('name', ['superadmin']); // Exclude superadmin
             })
             ->when($request->name, function($q, $v) {
@@ -38,7 +39,13 @@ class UserController extends Controller
             'query' => $request->input(),
             'divisis' => Divisi::get(),
             'absensis' => Absensi::get(),
-            'roles' => Role::whereNot('name', "superadmin")->get()
+            'roles' => Role::whereNot('name', "superadmin")->get(),
+            'permissions' => [
+                'canAdd' => $this->user->can("create user"),
+                'canShow' => $this->user->can("show user"),
+                'canUpdate' => $this->user->can("update user"),
+                'canDelete' => $this->user->can("delete user"),
+            ]
         ]);
     }
 
@@ -120,18 +127,20 @@ class UserController extends Controller
             ];
         }
 
-
         return Inertia::render('user/show', [
             'user' => $user,
             'total_absensi' => [
-            'hadir' => $totalHadir,
-            'telat' => $totalTelat,
-            'izin' => $totalIzin,
-            'cuti' => $totalCuti,
-            'alpha' => $totalAlpha,
-            'total' => $totalHadir + $totalTelat   
-        ],  
-        'chart_data' => $allMonth // Kosongin dulu
+                'hadir' => $totalHadir,
+                'telat' => $totalTelat,
+                'izin' => $totalIzin,
+                'cuti' => $totalCuti,
+                'alpha' => $totalAlpha,
+                'total' => $totalHadir + $totalTelat   
+            ],  
+            'chart_data' => $allMonth,
+            'permissions' => [
+                'canUpdate' => $this->user->can("update user"),
+            ]
         ]);
     }
 

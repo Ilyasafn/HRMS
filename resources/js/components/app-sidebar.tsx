@@ -3,7 +3,7 @@ import { NavMain } from '@/components/nav-main';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookCheck, BookMarked, Building, Database, KeySquare, LayoutGrid, Users, UserSearch } from 'lucide-react';
+import { BookCheck, BookMarked, Building, Database, KeySquare, LayoutGrid, ReceiptText, Users, UserSearch } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const footerNavItems: NavItem[] = [];
@@ -40,6 +40,12 @@ export function AppSidebar() {
       href: route('cuti.index'),
       icon: BookMarked,
       available: menus.cuti,
+    },
+    {
+      title: 'Payroll',
+      href: route('payroll.index'),
+      icon: ReceiptText,
+      available: menus.payroll,
     },
     {
       title: 'Documentation',

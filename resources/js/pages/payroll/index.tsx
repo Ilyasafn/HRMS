@@ -3,31 +3,38 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import StatusBadge from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { capitalizeWords } from '@/lib/utils';
 import { SharedData } from '@/types';
+import { Payroll } from '@/types/payroll';
 import { User } from '@/types/user';
 import { Link, usePage } from '@inertiajs/react';
-import { Edit, Filter, Folder, FolderArchive, Plus, Trash2 } from 'lucide-react';
+import { Edit, Filter, Folder, Plus, Trash2 } from 'lucide-react';
 import { FC, useState } from 'react';
-import UserBulkDeleteDialog from './components/user-bulk-delete.dialog';
-import UserBulkEditSheet from './components/user-bulk-edit-sheet';
-import UserDeleteDialog from './components/user-delete-dialog';
-import UserFilterSheet from './components/user-filter-sheet';
-import UserFormSheet from './components/user-form-sheet';
+import PayrollBulkDeleteDialog from './components/payroll-bulk-delete-dialog';
+import PayrollBulkEditSheet from './components/payroll-bulk-edit-sheet';
+import PayrollDeleteDialog from './components/payroll-delete-dialog';
+import PayrollFilterSheet from './components/payroll-filter-sheet';
+import PayrollFormSheet from './components/payroll-form-sheet';
 
 type Props = {
-  users: User[];
+  payrolls: Payroll[];
   query: { [key: string]: string };
+  users: User[];
 };
 
-const UserList: FC<Props> = ({ users, query }) => {
+const PayrollList: FC<Props> = ({ payrolls, query, users }) => {
   const [ids, setIds] = useState<number[]>([]);
   const [cari, setCari] = useState('');
 
   const { permissions } = usePage<SharedData>().props;
+
+  // console.log('payroll data:', payrolls);
+
+  console.log(
+    'map:',
+    payrolls.map((p) => p.id),
+  );
 
   return (
     <AppLayout
@@ -37,33 +44,28 @@ const UserList: FC<Props> = ({ users, query }) => {
           href: '/dashboard',
         },
         {
-          title: 'Karyawan',
-          href: route('user.index'),
+          title: 'Payroll',
+          href: route('payroll.index'),
         },
       ]}
-      title="Users"
-      description="Manage your users"
+      title="Payrolls"
+      description="Manage your payrolls"
       actions={
         <>
           {permissions?.canAdd && (
-            <UserFormSheet purpose="create">
+            <PayrollFormSheet purpose="create" users={users}>
               <Button>
                 <Plus />
-                Create new user
+                Create new payroll
               </Button>
-            </UserFormSheet>
+            </PayrollFormSheet>
           )}
-          <Button size={'icon'} variant={'destructive'} asChild>
-            <Link href={route('user.archived')}>
-              <FolderArchive />
-            </Link>
-          </Button>
         </>
       }
     >
       <div className="flex gap-2">
-        <Input placeholder="Search users..." value={cari} onChange={(e) => setCari(e.target.value)} />
-        <UserFilterSheet query={query}>
+        <Input placeholder="Search payrolls..." value={cari} onChange={(e) => setCari(e.target.value)} />
+        <PayrollFilterSheet query={query}>
           <Button>
             <Filter />
             Filter data
@@ -71,22 +73,22 @@ const UserList: FC<Props> = ({ users, query }) => {
               <Badge variant="secondary">{Object.values(query).filter((val) => val && val !== '').length}</Badge>
             )}
           </Button>
-        </UserFilterSheet>
+        </PayrollFilterSheet>
         {ids.length > 0 && (
           <>
             <Button variant={'ghost'} disabled>
               {ids.length} item selected
             </Button>
-            <UserBulkEditSheet userIds={ids}>
+            <PayrollBulkEditSheet payrollIds={ids}>
               <Button>
                 <Edit /> Edit selected
               </Button>
-            </UserBulkEditSheet>
-            <UserBulkDeleteDialog userIds={ids}>
+            </PayrollBulkEditSheet>
+            <PayrollBulkDeleteDialog payrollIds={ids}>
               <Button variant={'destructive'}>
                 <Trash2 /> Delete selected
               </Button>
-            </UserBulkDeleteDialog>
+            </PayrollBulkDeleteDialog>
           </>
         )}
       </div>
@@ -97,10 +99,10 @@ const UserList: FC<Props> = ({ users, query }) => {
               <Button variant={'ghost'} size={'icon'} asChild>
                 <Label>
                   <Checkbox
-                    checked={ids.length === users.length}
+                    checked={ids.length === payrolls.length}
                     onCheckedChange={(checked) => {
                       if (checked) {
-                        setIds(users.map((user) => user.id));
+                        setIds(payrolls.map((payroll) => payroll.id));
                       } else {
                         setIds([]);
                       }
@@ -109,71 +111,57 @@ const UserList: FC<Props> = ({ users, query }) => {
                 </Label>
               </Button>
             </TableHead>
-            <TableHead>No</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Nik</TableHead>
-            <TableHead>Divisi</TableHead>
-            <TableHead>Jabatan</TableHead>
-            <TableHead>Jenis Kelamin</TableHead>
-            <TableHead>Handphone</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>Periode</TableHead>
+            <TableHead>Jumlah Karyawan</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users
-            .filter((user) => JSON.stringify(user).toLowerCase().includes(cari.toLowerCase()))
-            .map((user, i) => (
-              <TableRow key={user.id}>
+          {payrolls
+            .filter((payroll) => JSON.stringify(payroll).toLowerCase().includes(cari.toLowerCase()))
+            .map((payroll) => (
+              <TableRow key={`payroll-${payroll.id}`}>
                 <TableCell>
                   <Button variant={'ghost'} size={'icon'} asChild>
                     <Label>
                       <Checkbox
-                        checked={ids.includes(user.id)}
+                        checked={ids.includes(payroll.id)}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            setIds([...ids, user.id]);
+                            setIds([...ids, payroll.id]);
                           } else {
-                            setIds(ids.filter((id) => id !== user.id));
+                            setIds(ids.filter((id) => id !== payroll.id));
                           }
                         }}
                       />
                     </Label>
                   </Button>
                 </TableCell>
-                <TableCell>{i + 1}</TableCell>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.nik}</TableCell>
-                <TableCell>{user.divisi?.name || 'N/A'}</TableCell>
-                <TableCell>{user.roles?.flatMap((r) => capitalizeWords(r.name))}</TableCell>
-                <TableCell>{user.jenis_kelamin}</TableCell>
-                <TableCell>{user.no_telp}</TableCell>
+                <TableCell>{payroll.periode_label}</TableCell>
+                <TableCell>{payroll.jumlah_karyawan}</TableCell>
                 <TableCell>
-                  <StatusBadge status={user.status} />
-                </TableCell>
-                <TableCell className="flex">
                   {permissions?.canShow && (
                     <Button variant={'ghost'} size={'icon'}>
-                      <Link href={route('user.show', user.id)}>
+                      <Link href={route('payroll.periode.show', { periode: String(payroll.periode_bulan) })}>
                         <Folder />
                       </Link>
                     </Button>
                   )}
-
                   {permissions?.canUpdate && (
-                    <UserFormSheet purpose="edit" user={user}>
-                      <Button variant={'ghost'} size={'icon'}>
-                        <Edit />
-                      </Button>
-                    </UserFormSheet>
+                    <>
+                      <PayrollFormSheet purpose="edit" payroll={payroll} users={users}>
+                        <Button variant={'ghost'} size={'icon'}>
+                          <Edit />
+                        </Button>
+                      </PayrollFormSheet>
+                    </>
                   )}
-
                   {permissions?.canDelete && (
-                    <UserDeleteDialog user={user}>
+                    <PayrollDeleteDialog payroll={payroll}>
                       <Button variant={'ghost'} size={'icon'}>
                         <Trash2 />
                       </Button>
-                    </UserDeleteDialog>
+                    </PayrollDeleteDialog>
                   )}
                 </TableCell>
               </TableRow>
@@ -184,4 +172,4 @@ const UserList: FC<Props> = ({ users, query }) => {
   );
 };
 
-export default UserList;
+export default PayrollList;

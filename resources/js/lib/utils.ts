@@ -117,12 +117,19 @@ export function capitalizeWords(str: string): string {
     .join(' ');
 }
 
-export function formatRupiah(angka: number): string {
+export function formatRupiah(angka: number | string): string {
+  const numericValue = typeof angka === 'string' ? parseFloat(angka) : angka;
+
+  // Handle NaN, null, undefined
+  if (!numericValue || isNaN(numericValue)) {
+    return 'Rp 0';
+  }
+
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0,
-  }).format(angka);
+  }).format(numericValue);
 }
 
 // utils/dateUtils.ts atau tambah di lib/utils.ts

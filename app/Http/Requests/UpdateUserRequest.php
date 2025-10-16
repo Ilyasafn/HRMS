@@ -35,6 +35,8 @@ class UpdateUserRequest extends FormRequest
             'tgl_masuk' => 'nullable|date',
             'jenis_kelamin' => 'nullable|in:Laki-laki,Perempuan',
             'status' => 'nullable|in:Aktif,Tidak Aktif',
+            'custom_gaji_pokok' => 'nullable',
+            'custom_tunjangan' => 'nullable',
         ];
     }
 
@@ -52,6 +54,8 @@ class UpdateUserRequest extends FormRequest
             'tgl_masuk.date' => 'Tanggal masuk tidak valid.',
             'jenis_kelamin.in' => 'Jenis kelamin harus Laki-laki atau Perempuan.',
             'status.in' => 'Status harus Aktif atau Tidak Aktif.',
+            'custom_gaji_pokok' => 'Custom gaji pokok harus berupa.',
+            'custom_tunjangan' => 'Custom tunjangan harus berupa.',
         ];
     }
 }

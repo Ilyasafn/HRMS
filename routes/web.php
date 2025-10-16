@@ -11,9 +11,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\DivisiController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\CutiController;
-
-
-
+use App\Http\Controllers\PayrollController;
+use Illuminate\Support\Facades\Schema;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
 Route::get('/about', [WelcomeController::class, 'about'])->name('about');
@@ -54,7 +53,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('absensi/ajukan-izin', [AbsensiController::class, 'ajukanIzin'])->name('absensi.ajukan-izin');
     Route::put('absensi/{absensi}/approval', [AbsensiController::class, 'approval'])->name('absensi.approval');
     Route::apiResource('absensi', AbsensiController::class);
-    Route::get('absensi/{tanggal}', [AbsensiController::class, 'show'])->name('absensi.show');
+    Route::get('absensi/tanggal/{tanggal}', [AbsensiController::class, 'showByTanggal'])->name('absensi.tanggal.show');
 
     Route::put('cuti/bulk', [CutiController::class, 'bulkUpdate'])->name('cuti.bulk.update');
     Route::delete('cuti/bulk', [CutiController::class, 'bulkDelete'])->name('cuti.bulk.destroy');
@@ -65,6 +64,41 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('cuti/ajukan-cuti', [CutiController::class, 'ajukanCuti'])->name('cuti.ajukan-cuti');
     Route::put('cuti/{cuti}/approval', [CutiController::class, 'approval'])->name('cuti.approval');
     Route::apiResource('cuti', CutiController::class);
+    
+    Route::put('payroll/bulk', [PayrollController::class, 'bulkUpdate'])->name('payroll.bulk.update');
+    Route::delete('payroll/bulk', [PayrollController::class, 'bulkDelete'])->name('payroll.bulk.destroy');
+    Route::put('payroll/{payroll}/approve', [PayrollController::class, 'approveApprovalStatus'])->name('payroll.approve');
+    Route::put('payroll/{payroll}/approve-status', [PayrollController::class, 'approveApproval'])->name('payroll.approveStatus');
+    Route::apiResource('payroll', PayrollController::class);
+    Route::get('payroll/periode/{periode}', [PayrollController::class, 'showByPeriode'])->name('payroll.periode.show');
+    Route::get('payroll/periode/{periode}/{user}', [PayrollController::class, 'showUserPayroll'])->name('payroll.user.show');
+    Route::get('/payroll/available-periodes/{user}', [PayrollController::class, 'availablePeriodes'])->name('payroll.availablePeriodes');
+    Route::get('/payroll/{user}/{periode}/summary', [PayrollController::class, 'absensiSummary'])->name('payroll.absensiSummary');
+
+    Route::get('/debug-payroll-schema', function() {
+    $columns = Schema::getColumns('payrolls');
+    return collect($columns)->map(function($col) {
+        return [
+            'name' => $col['name'],
+            'type' => $col['type'],
+            'nullable' => $col['nullable'],
+            'default' => $col['default']
+        ];
+    });
+});
+// routes/web.php (sementara)
+Route::get('/test-payroll', function() {
+    $payrolls = \App\Models\Payroll::all();
+    
+    if ($payrolls->isEmpty()) {
+        return "Tidak ada data payroll di database";
+    }
+    
+    return [
+        'total_records' => $payrolls->count(),
+        'data' => $payrolls->toArray()
+    ];
+});
 });
 
 require __DIR__.'/settings.php';

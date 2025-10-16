@@ -155,7 +155,6 @@ const CutiFormSheet: FC<Props> = ({ children, cuti, purpose, users = [] }) => {
                         setTglCuti(date);
                         setTglCutiOpen(false);
                         if (date) {
-                          // ✅ FIX: Manual format tanpa timezone conversion
                           const year = date.getFullYear();
                           const month = String(date.getMonth() + 1).padStart(2, '0');
                           const day = String(date.getDate()).padStart(2, '0');
@@ -208,7 +207,6 @@ const CutiFormSheet: FC<Props> = ({ children, cuti, purpose, users = [] }) => {
                         setTglMulai(date);
                         setTglMulaiOpen(false);
                         if (date) {
-                          // ✅ FIX: Manual format tanpa timezone conversion
                           const year = date.getFullYear();
                           const month = String(date.getMonth() + 1).padStart(2, '0');
                           const day = String(date.getDate()).padStart(2, '0');
@@ -239,7 +237,6 @@ const CutiFormSheet: FC<Props> = ({ children, cuti, purpose, users = [] }) => {
                         setTglSelesai(date);
                         setTglSelesaiOpen(false);
                         if (date) {
-                          // ✅ FIX: Manual format tanpa timezone conversion
                           const year = date.getFullYear();
                           const month = String(date.getMonth() + 1).padStart(2, '0');
                           const day = String(date.getDate()).padStart(2, '0');
@@ -266,12 +263,12 @@ const CutiFormSheet: FC<Props> = ({ children, cuti, purpose, users = [] }) => {
           </form>
         </ScrollArea>
         <DialogFooter>
-          <SubmitButton onClick={handleSubmit} label={`${capitalizeWords(purpose)} cuti`} loading={processing} disabled={processing} />
           <DialogClose asChild>
             <Button variant={'outline'}>
-              <X /> Batalin
+              <X /> Batal
             </Button>
           </DialogClose>
+          <SubmitButton onClick={handleSubmit} label={`${capitalizeWords(purpose)} cuti`} loading={processing} disabled={processing} />
         </DialogFooter>
       </DialogContent>
     </Dialog>

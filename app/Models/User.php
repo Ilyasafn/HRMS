@@ -30,11 +30,13 @@ class User extends Authenticatable implements HasMedia
         'nik',
         'divisi_id',
         'tgl_lahir',
+        'tgl_masuk',
         'jenis_kelamin',
         'alamat',
         'no_telp',
-        'tgl_masuk',
         'status',
+        'custom_gaji_pokok',
+        'custom_tunjangan'
     ];
 
     /**

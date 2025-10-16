@@ -4,7 +4,7 @@ import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartToo
 import { Separator } from '@/components/ui/separator';
 import StatusBadge from '@/components/ui/status-badge';
 import AppLayout from '@/layouts/app-layout';
-import { capitalizeWords } from '@/lib/utils';
+import { capitalizeWords, formatRupiah } from '@/lib/utils';
 import { ChartData, TotalAbsensi } from '@/types/absensi';
 import { User } from '@/types/user';
 import { Link } from '@inertiajs/react';
@@ -67,9 +67,10 @@ const ShowUser: FC<Props> = ({ user, total_absensi, chart_data }) => {
         </>
       }
     >
+      {/* <DDump content={user} /> */}
       <div className="grid grid-cols-1 grid-rows-2 gap-4 md:grid-cols-3">
         {/* Informasi Pribadi */}
-        <Card className="col-span-2 row-span-2">
+        <Card className="row-span-full md:col-span-2">
           <CardHeader>
             <CardTitle className="mb-1.5">Informasi Pribadi</CardTitle>
             <Separator />
@@ -84,11 +85,9 @@ const ShowUser: FC<Props> = ({ user, total_absensi, chart_data }) => {
         {/* Informasi Karyawan */}
         <Card className="">
           <CardHeader>
-            <div className="flex items-center">
-              <div className="flex-grow">
-                <CardTitle className="mb-1.5">Informasi Karyawan</CardTitle>
-              </div>
-              <div className="mb-2.5 flex-none">
+            <div className="flex flex-grow items-center">
+              <CardTitle className="mb-1.5">Informasi Karyawan</CardTitle>
+              <div className="mb-2.5 ml-1">
                 <StatusBadge status={user.status} />
               </div>
             </div>
@@ -97,16 +96,16 @@ const ShowUser: FC<Props> = ({ user, total_absensi, chart_data }) => {
             <CardDescription>Tanggal Masuk: {user.tgl_masuk}</CardDescription>
             <CardDescription>Sisa Cuti Tahunan: {user.sisa_cuti_tahunan} hari</CardDescription>
             <CardDescription>Total Cuti Diambil: {user.total_cuti_diambil} hari</CardDescription>
+            <CardDescription>Gaji Pokok: {formatRupiah(user?.custom_gaji_pokok)}</CardDescription>
+            <CardDescription>Tunjangan: {formatRupiah(user?.custom_tunjangan)}</CardDescription>
           </CardHeader>
         </Card>
 
         {/* Informasi Rekapan Absensi */}
         <Card className="">
           <CardHeader>
-            <div className="flex items-center">
-              <div className="flex-grow">
-                <CardTitle className="mb-1.5">Informasi Absensi</CardTitle>
-              </div>
+            <div className="flex flex-grow items-center">
+              <CardTitle className="mb-1.5">Informasi Absensi</CardTitle>
             </div>
             <Separator />
             {/* Total Absensi */}

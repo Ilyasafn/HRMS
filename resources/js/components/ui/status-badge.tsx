@@ -20,6 +20,10 @@ const StatusBadge = ({ status }: Props) => {
     "sakit": "bg-slate-200 text-slate-800 border-slate-200",
     "alpha": "bg-red-200 text-red-800 border-red-200",
 
+    // Payroll
+    "draft": "bg-yellow-200 text-yellow-800 border-yellow-200",
+    "finalized": "bg-green-200 text-green-800 border-green-200",
+
     // Approval
     "pending": "bg-yellow-200 text-yellow-800 border-yellow-200",
     "approved": "bg-green-200 text-green-800 border-green-200",

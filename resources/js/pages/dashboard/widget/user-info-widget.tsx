@@ -12,7 +12,7 @@ const UserInfoWidget = () => {
 
   return (
     <Card>
-      <div className="grid md:grid-cols-3 gap-4 p-1">
+      <div className="grid gap-4 p-1 md:grid-cols-3">
         <div className="col-span-2">
           <CardHeader className="flex flex-row items-center gap-2">
             <div>

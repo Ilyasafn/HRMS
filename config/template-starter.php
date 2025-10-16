@@ -16,8 +16,9 @@ return [
 	'default-roles' => [
 		'superadmin',
 		'admin',
-		'user',
 		'staff',
+		'supervisor',
+        'manager'
 	],
 
 	/*
@@ -31,7 +32,7 @@ return [
     |
     */
 
-	'default-role' => 'user',
+	'default-role' => 'staff',
 
 	/*
     |--------------------------------------------------------------------------
