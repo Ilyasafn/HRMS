@@ -18,9 +18,9 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             DivisiSeeder::class,
             UserSeeder::class,
-            AbsensiSeeder::class,
-            CutiSeeder::class,
-            PayrollSeeder::class
+            // AbsensiSeeder::class,
+            // CutiSeeder::class,
+            // PayrollSeeder::class
         ]);
     }
 }

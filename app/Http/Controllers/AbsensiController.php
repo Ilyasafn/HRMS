@@ -25,7 +25,7 @@ class AbsensiController extends Controller
 
         $user = Auth::user();
         
-        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();
+        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin', 'supervisor', 'manager', 'human resource'])->exists();
         
         // Query untuk list tanggal
         $query = Absensi::query()
@@ -58,6 +58,7 @@ class AbsensiController extends Controller
                 'canShow' => $this->user->can("show absensi"),
                 'canUpdate' => $this->user->can("update absensi"),
                 'canDelete' => $this->user->can("delete absensi"),
+                // 'canArchived' => $this->user->can("archived absensi"),
             ]
         ]);
     }
@@ -96,50 +97,51 @@ class AbsensiController extends Controller
         Absensi::create($validated);
 
         return redirect()->back()->with('success', 'Absensi berhasil ditambahkan');
-}
+    }
 
     /**
      * Display the specified resource.
      */
-   public function showByTanggal($tanggal)
-{
-    $this->pass("show absensi");
+    public function showByTanggal($tanggal)
+    {
+        $this->pass("show absensi");
 
-    $user = Auth::user();
-    
-    // Check admin role 
-    $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();
-    
-    // Query absensi untuk tanggal tertentu
-    $query = Absensi::whereDate('tanggal', $tanggal)
-        ->with(['user', 'approvedBy'])
-        ->whereHas('user.roles', function($q) {
-                $q->whereNotIn('name', ['superadmin']); // Exclude superadmin
-            });
+        $user = Auth::user();
+        
+        // Check admin role 
+        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin', 'supervisor', 'manager', 'human resource'])->exists();
+        
+        // Query absensi untuk tanggal tertentu
+        $query = Absensi::whereDate('tanggal', $tanggal)
+            ->with(['user', 'approvedBy'])
+            ->whereHas('user.roles', function($q) {
+                    $q->whereNotIn('name', ['superadmin']); // Exclude superadmin
+                });
 
-    // Jika bukan admin, hanya bisa lihat absensi sendiri
-    if (!$isAdmin) {
-        $query->where('user_id', $user->id);
+        // Jika bukan admin, hanya bisa lihat absensi sendiri
+        if (!$isAdmin) {
+            $query->where('user_id', $user->id);
+        }
+
+        $absensis = $query->get();
+
+        // Jika user biasa dan tidak ada data absensi di tanggal tersebut, return 403
+        if (!$isAdmin && $absensis->isEmpty()) {
+            abort(403, 'Unauthorized action. Anda tidak memiliki absensi pada tanggal ini.');
+        }
+
+        return Inertia::render('absensi/show', [
+            'absensis' => $absensis,
+            'tanggal' => $tanggal,
+            'users' => $isAdmin ? User::all() : [],
+            'isAdmin' => $isAdmin,
+            'permissions' => [
+                'canUpdate' => $this->user->can("update absensi"),
+                'canDelete' => $this->user->can("delete absensi"),
+                'canApprove' => $this->user->can('approve absensi')
+            ]
+        ]);
     }
-
-    $absensis = $query->get();
-
-    // Jika user biasa dan tidak ada data absensi di tanggal tersebut, return 403
-    if (!$isAdmin && $absensis->isEmpty()) {
-        abort(403, 'Unauthorized action. Anda tidak memiliki absensi pada tanggal ini.');
-    }
-
-    return Inertia::render('absensi/show', [
-        'absensis' => $absensis,
-        'tanggal' => $tanggal,
-        'users' => $isAdmin ? User::all() : [],
-        'isAdmin' => $isAdmin,
-        'permissions' => [
-            'canUpdate' => $this->user->can("update absensi"),
-            'canDelete' => $this->user->can("delete absensi"),
-        ]
-    ]);
-}
 
     /**
      * Update the specified resource in storage.
@@ -157,7 +159,7 @@ class AbsensiController extends Controller
 
     public function approval(Request $request, Absensi $absensi)
     {
-        $this->pass("update absensi");
+        $this->pass("approve absensi");
 
         $validated = $request->validate([
             'approval_status' => 'required|in:Approved,Rejected',
@@ -179,23 +181,24 @@ class AbsensiController extends Controller
         $status = $this->determineStatusMasuk($now);
 
         if (!Auth::user()->hasRole(['admin', 'superadmin'])) {
+
+            // Matikan fitur absensi jika telah lewat jam 17:59
             $cutoff = Carbon::createFromTime(17, 59, 0, 'Asia/Makassar');
             if (Carbon::now('Asia/Makassar')->greaterThan($cutoff)) {
                 return back()->with('error', 'Waktu absensi sudah berakhir, tidak bisa check-in.');
+            }
         }
-}
 
         $absensi = Absensi::where('user_id', $userId)
         ->whereDate('tanggal', $today)
         ->first();
 
+        // Jika sudah melakukan izin di hari tersebut, tidak bisa melakukan absen lagi
         if($absensi && in_array($absensi->status, ['Sakit', 'Izin', 'Lainnya'])) {
-
             return redirect()->back()->with('error', 'Anda sudah melakukan izin pada hari ini');
         }
-        
-        if(!$absensi) {
 
+        if(!$absensi) {
             $newAbsensi = Absensi::create([
                 'user_id' => $userId,
                 'tanggal' => $today,
@@ -228,15 +231,15 @@ class AbsensiController extends Controller
     public function ajukanIzin(Request $request) {
         $validated = $request->validate([
             'tanggal' => 'required|date',
-            'tipe' => 'required|in:Sakit,Izin,Lainnya', // Tambah Lainnya
+            'tipe' => 'required|in:Sakit,Izin,Lainnya',
             'keterangan' => 'required|string|max:500',
-            'jenis_lainnya' => 'required_if:tipe,Lainnya|string|max:100', // Field baru untuk spesifikasi
+            'jenis_lainnya' => 'required_if:tipe,Lainnya|string|max:100', // Field baru untuk alasan yang spesifik
         ]);
 
         $userId = Auth::id();
         $tanggal = Carbon::today('Asia/Makassar')->format('Y-m-d');
 
-
+        // kalau udah izin gabisa absen / izin lagi di hari yang sama
         $existingAbsensi = Absensi::where('user_id', $userId)
         ->where('tanggal', $tanggal)
         ->first();
@@ -261,26 +264,25 @@ class AbsensiController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Anda telah mengajukan izin');
-
     }
 
     private function determineStatusMasuk(Carbon $waktuMasuk)
     {
-       $jamMasukStandard = Carbon::createFromTimeString(
+    $jamMasukStandard = Carbon::createFromTimeString(
         config('absensi.jam_kerja.masuk', '08:00:00')
-       );
+    );
 
-       $toleransiMenit = config('absensi.toleransi_masuk', 15);
+    $toleransiMenit = config('absensi.toleransi_masuk', 15);
 
-       $batasToleransi = $jamMasukStandard->copy()->addMinutes($toleransiMenit);
+    $batasToleransi = $jamMasukStandard->copy()->addMinutes($toleransiMenit);
 
-       $waktuMasukTime = Carbon::createFromTimeString($waktuMasuk->format('H:i:s'));
+    $waktuMasukTime = Carbon::createFromTimeString($waktuMasuk->format('H:i:s'));
 
-       if($waktuMasukTime->lessThanOrEqualTo($batasToleransi)) {
+    if($waktuMasukTime->lessThanOrEqualTo($batasToleransi)) {
         return 'Hadir';
-       } else {
+    } else {
         return 'Telat';
-       }
+    }
     }
 
     /**

@@ -23,65 +23,65 @@ class PayrollController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-{
-    $this->pass("index payroll");
+    {
+        $this->pass("index payroll");
 
-    $user = Auth::user();
-    $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();
+        $user = Auth::user();
+        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin', 'manager', 'human resource'])->exists();
 
-    // Build base query (with eager load)
-    $query = Payroll::with('user.roles')
-        ->whereHas('user.roles', function ($q) {
-            $q->whereNotIn('name', ['superadmin']); // exclude superadmin
-        });
+        // Eager load, user dan roles
+        $query = Payroll::with('user.roles')
+            ->whereHas('user.roles', function ($q) {
+                $q->whereNotIn('name', ['superadmin']); // exclude superadmin
+            });
 
-    // If not admin, limit to current user
-    if (!$isAdmin) {
-        $query->where('user_id', $user->id);
+        // Filter data berdasarkan roles / jabatan
+        if (!$isAdmin) {
+            $query->where('user_id', $user->id);
+        }
+
+        // Filter id user
+        if ($request->has('user_id') && $request->user_id) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        // Get collection (after applying filters)
+        $payrollCollection = $query->get();
+
+        // Grouping payroll perbulan/periode
+        $payrolls = $payrollCollection
+            ->groupBy(function ($p) {
+                return Carbon::parse($p->periode)->format('Y-m');
+            })
+            ->map(function ($group, $key) {
+                return [
+                    'periode_bulan'    => $key,
+                    'periode_label'    => Carbon::createFromFormat('Y-m', $key)->translatedFormat('F Y'),
+                    'jumlah_karyawan'  => $group->count(),
+                    'total_gaji'       => $group->sum('total_gaji'),
+                    'pending_counts'   => $group->where('approval_status', 'Pending')->count(),
+                ];
+            })
+            ->sortKeysDesc()
+            ->values();
+
+        $users = [];
+        if ($isAdmin) {
+            $users = User::select('id', 'name')->get();
+        }
+
+        return Inertia::render('payroll/index', [
+            'payrolls' => $payrolls,
+            'query' => $request->input(),
+            'users' => $users,
+            'isAdmin' => $isAdmin,
+            'permissions' => [
+                'canAdd' => $this->user->can('create payroll'),
+                'canShow' => $this->user->can("show payroll"),
+                'canDelete' => $this->user->can("delete payroll"),
+            ]
+        ]);
     }
-
-    // If request asks for specific user_id, apply (admins only typically)
-    if ($request->has('user_id') && $request->user_id) {
-        $query->where('user_id', $request->user_id);
-    }
-
-    // Get collection (after applying filters)
-    $payrollCollection = $query->get();
-
-    // Group by periode (Y-m) and compute aggregates including pending_counts
-    $payrolls = $payrollCollection
-        ->groupBy(function ($p) {
-            return Carbon::parse($p->periode)->format('Y-m');
-        })
-        ->map(function ($group, $key) {
-            return [
-                'periode_bulan'    => $key,
-                'periode_label'    => Carbon::createFromFormat('Y-m', $key)->translatedFormat('F Y'),
-                'jumlah_karyawan'  => $group->count(),
-                'total_gaji'       => $group->sum('total_gaji'),
-                'pending_counts'   => $group->where('approval_status', 'Pending')->count(),
-            ];
-        })
-        ->sortKeysDesc()
-        ->values();
-
-    $users = [];
-    if ($isAdmin) {
-        $users = User::select('id', 'name')->get();
-    }
-
-    return Inertia::render('payroll/index', [
-        'payrolls' => $payrolls,
-        'query' => $request->input(),
-        'users' => $users,
-        'isAdmin' => $isAdmin,
-        'permissions' => [
-            'canAdd' => $this->user->can('create payroll'),
-            'canShow' => $this->user->can("show payroll"),
-            'canDelete' => $this->user->can("delete payroll"),
-        ]
-    ]);
-}
 
 
     /**
@@ -119,8 +119,8 @@ class PayrollController extends Controller
             );
 
             return redirect()->route('payroll.index')->with('success', 'Payroll berhasil dibuat atau diperbarui.');
-            } catch (\Exception $e) {
-                Log::error('Store Payroll Error: ' . $e->getMessage());
+            } 
+            catch (\Exception $e) {
                 return back()->with('error', 'Gagal membuat payroll: ' . $e->getMessage());
             }
     }
@@ -173,7 +173,6 @@ class PayrollController extends Controller
             return redirect()->back()->with('error', 'Gagal generate payroll: ' . $e->getMessage());
         }
     }
-
 
     public function availablePeriodesAll()
     {
@@ -235,7 +234,7 @@ class PayrollController extends Controller
     public function showByPeriode(Request $request, string $periode)
     {
         $user = Auth::user();
-        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();
+        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin', 'manager', 'human resource'])->exists();
 
         try {
             $periodeCarbon = Carbon::createFromFormat('Y-m', $periode);
@@ -254,11 +253,6 @@ class PayrollController extends Controller
         if ($request->has('user_id')) {
             $query->where('user_id', $request->user_id);
         }
-        
-            // Log::info('Payrolls for periode ' . $periode . ':', [
-        //     'count' => $payrolls->count(),
-        //     'data' => $payrolls->pluck('id', 'user_id')
-        // ]);
 
         if (!$isAdmin) {
             $query->where('user_id', $user->id);
@@ -300,9 +294,6 @@ class PayrollController extends Controller
 
         $summary = $this->generatePayrollSummary($payroll, $periodeCarbon);
 
-        // dd($periode);
-
-
         return Inertia::render('payroll/show', [
             'periode' => $periode,
             'periode_label' => $periodeCarbon->translatedFormat('F Y'),
@@ -310,11 +301,11 @@ class PayrollController extends Controller
             'payroll' => $payroll,
             'summary' => $summary,
             'permissions' => [
-                'canUpdate' => $this->user->can("update payroll"),                
+                'canApprove' => $this->user->can("approve payroll"),      
+                'canApproveStatus' => $this->user->can("approve status payroll"),      
             ]
         ]);
     }
-
 
     private function generatePayrollSummary(Payroll $payroll, Carbon $periode)
     {
@@ -383,7 +374,7 @@ class PayrollController extends Controller
     }
     public function approveApproval(Request $request, Payroll $payroll)
     {
-        $this->pass('approve payroll');
+        $this->pass('approve status payroll');
 
         $payroll->load(['user', 'approver']);
 

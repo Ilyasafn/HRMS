@@ -87,7 +87,7 @@ const ShowPayroll: FC<Props> = ({ payroll, summary }) => {
                   <CardDescription className="">Disetujui oleh: {payroll.approver?.name || 'Belum disetujui'}</CardDescription>
                 </div>
               </div>
-              {permissions?.canUpdate && (
+              {permissions?.canApprove && (
                 <div className="order-2 w-fit">
                   <PayrollApprovalStatusDialog payroll={payroll}>
                     <Button variant={'ghost'} size={'icon'}>
@@ -122,7 +122,7 @@ const ShowPayroll: FC<Props> = ({ payroll, summary }) => {
                 <StatusBadge status={payroll.status} />
               </div>
               <div className="order-2 w-fit">
-                {permissions?.canUpdate && (
+                {permissions?.canApproveStatus && (
                   <PayrollApprove payroll={payroll}>
                     <Button variant={'ghost'} size={'icon'}>
                       {payroll.status === 'Draft' ? <FolderClock /> : <Folder />}

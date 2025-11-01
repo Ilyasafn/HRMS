@@ -1,21 +1,19 @@
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { periodeBulan } from '@/lib/utils';
 import { SharedData } from '@/types';
 import { Payroll } from '@/types/payroll';
 import { User } from '@/types/user';
 import { Link, router, usePage } from '@inertiajs/react';
-import { Edit, Filter, Folder, Plus, Trash2 } from 'lucide-react';
+import { Edit, Folder, Plus, Trash2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import PayrollAutoGenerateAll from './components/payroll-auto-generate';
 import PayrollBulkDeleteDialog from './components/payroll-bulk-delete-dialog';
 import PayrollBulkEditSheet from './components/payroll-bulk-edit-sheet';
-import PayrollDeleteDialog from './components/payroll-delete-dialog';
-import PayrollFilterSheet from './components/payroll-filter-sheet';
 import PayrollFormSheet from './components/payroll-form-sheet';
 
 type Props = {
@@ -80,7 +78,7 @@ const PayrollList: FC<Props> = ({ payrolls, query, users, isAdmin }) => {
     >
       <div className="flex gap-2">
         <Input placeholder="Search payrolls..." value={cari} onChange={(e) => setCari(e.target.value)} />
-        <PayrollFilterSheet query={query}>
+        {/* <PayrollFilterSheet query={query}>
           <Button>
             <Filter />
             Filter data
@@ -88,7 +86,7 @@ const PayrollList: FC<Props> = ({ payrolls, query, users, isAdmin }) => {
               <Badge variant="secondary">{Object.values(query).filter((val) => val && val !== '').length}</Badge>
             )}
           </Button>
-        </PayrollFilterSheet>
+        </PayrollFilterSheet> */}
         {ids.length > 0 && (
           <>
             <Button variant={'ghost'} disabled>
@@ -152,7 +150,7 @@ const PayrollList: FC<Props> = ({ payrolls, query, users, isAdmin }) => {
                     </Label>
                   </Button>
                 </TableCell>
-                <TableCell>{payroll.periode_label}</TableCell>
+                <TableCell>{periodeBulan(payroll.periode_bulan)}</TableCell>
                 {isAdmin && <TableCell>{payroll.jumlah_karyawan}</TableCell>}
                 <TableCell>
                   <div className="relative inline-block">
@@ -167,22 +165,6 @@ const PayrollList: FC<Props> = ({ payrolls, query, users, isAdmin }) => {
                       </span>
                     )}
                   </div>
-                  {permissions?.canUpdate && (
-                    <>
-                      <PayrollFormSheet purpose="edit" payroll={payroll} users={users}>
-                        <Button variant={'ghost'} size={'icon'}>
-                          <Edit />
-                        </Button>
-                      </PayrollFormSheet>
-                    </>
-                  )}
-                  {permissions?.canDelete && (
-                    <PayrollDeleteDialog payroll={payroll}>
-                      <Button variant={'ghost'} size={'icon'}>
-                        <Trash2 />
-                      </Button>
-                    </PayrollDeleteDialog>
-                  )}
                 </TableCell>
               </TableRow>
             ))}

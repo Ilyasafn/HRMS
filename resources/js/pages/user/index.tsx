@@ -53,11 +53,13 @@ const UserList: FC<Props> = ({ users, query }) => {
               </Button>
             </UserFormSheet>
           )}
-          <Button size={'icon'} variant={'destructive'} asChild>
-            <Link href={route('user.archived')}>
-              <FolderArchive />
-            </Link>
-          </Button>
+          {permissions?.canArchived && (
+            <Button size={'icon'} variant={'destructive'} asChild>
+              <Link href={route('user.archived')}>
+                <FolderArchive />
+              </Link>
+            </Button>
+          )}
         </>
       }
     >

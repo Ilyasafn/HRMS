@@ -8,19 +8,19 @@ import { SharedData } from '@/types';
 import { Absensi } from '@/types/absensi';
 import { User } from '@/types/user';
 import { Link, usePage } from '@inertiajs/react';
-import { ArrowLeft, Edit, Folder, FolderClock, Image, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, Folder, FolderClock, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import AbsensiApprovalStatusDialog from './components/absensi-approval-status-dialog';
 import AbsensiDeleteDialog from './components/absensi-delete-dialog';
 import AbsensiFormSheet from './components/absensi-form-sheet';
-import AbsensiUploadMediaSheet from './components/absensi-upload-sheet';
 
 type Props = {
   absensis: Absensi[];
   users: User[];
+  isAdmin: boolean;
 };
 
-const ShowAbsensi: FC<Props> = ({ absensis, users }) => {
+const ShowAbsensi: FC<Props> = ({ absensis, users, isAdmin }) => {
   const { permissions } = usePage<SharedData>().props;
 
   return (
@@ -96,25 +96,20 @@ const ShowAbsensi: FC<Props> = ({ absensis, users }) => {
               <TableCell>
                 <StatusBadge status={absensi.approval_status} />
               </TableCell>
-              <TableCell>
+              <TableCell className="">
+                {permissions?.canApprove && (
+                  <AbsensiApprovalStatusDialog absensi={absensi}>
+                    <Button variant={'ghost'} size={'icon'}>
+                      {absensi?.approval_status === 'Pending' ? <FolderClock /> : <Folder />}
+                    </Button>
+                  </AbsensiApprovalStatusDialog>
+                )}
                 {permissions?.canUpdate && (
-                  <>
-                    <AbsensiApprovalStatusDialog absensi={absensi}>
-                      <Button variant={'ghost'} size={'icon'}>
-                        {absensi?.approval_status === 'Pending' ? <FolderClock /> : <Folder />}
-                      </Button>
-                    </AbsensiApprovalStatusDialog>
-                    <AbsensiUploadMediaSheet absensi={absensi}>
-                      <Button variant={'ghost'} size={'icon'}>
-                        <Image />
-                      </Button>
-                    </AbsensiUploadMediaSheet>
-                    <AbsensiFormSheet purpose="edit" absensi={absensi} users={users}>
-                      <Button variant={'ghost'} size={'icon'}>
-                        <Edit />
-                      </Button>
-                    </AbsensiFormSheet>
-                  </>
+                  <AbsensiFormSheet purpose="edit" absensi={absensi} users={users}>
+                    <Button variant={'ghost'} size={'icon'}>
+                      <Edit />
+                    </Button>
+                  </AbsensiFormSheet>
                 )}
                 {permissions?.canDelete && (
                   <AbsensiDeleteDialog absensi={absensi}>

@@ -23,7 +23,6 @@ class DivisiController extends Controller
         
         $data = Divisi::query()
             ->withCount('users')
-            //->with(['media'])
             ->when($request->name, function($q, $v){
                 $q->where('name', $v);
             

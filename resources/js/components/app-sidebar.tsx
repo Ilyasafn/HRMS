@@ -103,6 +103,7 @@ export function AppSidebar() {
 
       {/* <SidebarFooter>
         <NavFooter items={footerNavItems} className="mt-auto" />
+        awe
       </SidebarFooter> */}
     </Sidebar>
   );

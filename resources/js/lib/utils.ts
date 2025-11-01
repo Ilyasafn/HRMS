@@ -1,6 +1,8 @@
 import { type ClassValue, clsx } from 'clsx';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 // import locale Indonesia
+import { format, parse } from 'date-fns';
+import { id } from 'date-fns/locale';
 import dayjs from 'dayjs';
 import 'dayjs/locale/id';
 import { toast } from 'sonner';
@@ -27,6 +29,10 @@ export function strLimit(text: string = '', limit: number = 50, end: string = '.
 
 export function dateDFY(date: string | null) {
   return dayjs(date).format('dddd, DD MMMM YYYY');
+}
+
+export function periodeBulan(date: string | null) {
+  return dayjs(date).format('MMMM YYYY');
 }
 
 export function handlePasteScreenshot(callback: (file: File) => void) {
@@ -156,4 +162,13 @@ export const isWeekend = (date: Date = new Date()): boolean => {
 
 export const isTodayWeekend = (): boolean => {
   return isWeekend(new Date());
+};
+export const formatPeriodeLabel = (periode: string) => {
+  try {
+    if (!/^\d{4}-\d{2}$/.test(periode)) return periode;
+    const date = parse(periode, 'yyyy-MM', new Date());
+    return format(date, 'MMMM yyyy', { locale: id });
+  } catch {
+    return periode;
+  }
 };

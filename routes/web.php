@@ -21,10 +21,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('documentation', [DashboardController::class, 'documentation'])->name('documentation');
 
-    Route::get('user/{user}', [UserController::class, 'show'])->name('user.show');
+    Route::get('user/archived', [UserController::class, 'archived'])->name('user.archived');
     Route::put('user/bulk', [UserController::class, 'bulkUpdate'])->name('user.bulk.update');
     Route::delete('user/bulk', [UserController::class, 'bulkDelete'])->name('user.bulk.destroy');
-    Route::get('user/archived', [UserController::class, 'archived'])->name('user.archived');
     Route::put('user/{user}/restore', [UserController::class, 'restore'])->name('user.restore');
     Route::delete('user/{user}/force-delete', [UserController::class, 'forceDelete'])->name('user.force-delete');
     Route::apiResource('user', UserController::class);
@@ -76,7 +75,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('payroll/periode/{periode}/{user}', [PayrollController::class, 'showUserPayroll'])->name('payroll.user.show');
     Route::get('/payroll/available-periodes/{user}', [PayrollController::class, 'availablePeriodes'])->name('payroll.availablePeriodes');
     Route::get('/payroll/{user}/{periode}/summary', [PayrollController::class, 'absensiSummary'])->name('payroll.absensiSummary');
-    
 
 
     Route::get('/debug-payroll-schema', function() {

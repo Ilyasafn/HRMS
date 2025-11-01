@@ -5,14 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { capitalizeWords, formatRupiah } from '@/lib/utils';
+import { SharedData } from '@/types';
 import { Role } from '@/types/role';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { Edit, Filter, Folder, List, Plus, Trash2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import RoleDeleteDialog from './components/role-delete-dialog';
 import RoleFilterSheet from './components/role-filter-sheet';
 import RoleFormSheet from './components/role-form-sheet';
-import { formatRupiah } from '@/lib/utils';
 
 type Props = {
   roles: Role[];
@@ -20,6 +21,8 @@ type Props = {
 };
 
 const RoleList: FC<Props> = ({ roles, query }) => {
+  const { permissions } = usePage<SharedData>().props;
+
   const [ids, setIds] = useState<number[]>([]);
   const [cari, setCari] = useState('');
 
@@ -29,12 +32,14 @@ const RoleList: FC<Props> = ({ roles, query }) => {
       description="Manage your roles"
       actions={
         <>
-          <RoleFormSheet purpose="create">
-            <Button>
-              <Plus />
-              Create new role
-            </Button>
-          </RoleFormSheet>
+          {permissions?.canCreate && (
+            <RoleFormSheet purpose="create">
+              <Button>
+                <Plus />
+                Create new role
+              </Button>
+            </RoleFormSheet>
+          )}
           <Button asChild>
             <Link href={route('permission.index')}>
               <List />
@@ -116,26 +121,30 @@ const RoleList: FC<Props> = ({ roles, query }) => {
                     </Label>
                   </Button>
                 </TableCell>
-                <TableCell>{role.name}</TableCell>
+                <TableCell>{capitalizeWords(role.name)}</TableCell>
                 <TableCell>{formatRupiah(role.gaji_pokok)}</TableCell>
                 <TableCell>{formatRupiah(role.tunjangan)}</TableCell>
                 <TableCell>{role.permissions?.length} permissions</TableCell>
                 <TableCell>
-                  <Button variant={'ghost'} size={'icon'}>
-                    <Link href={route('role.show', role.id)}>
-                      <Folder />
-                    </Link>
-                  </Button>
+                  {permissions?.canShow && (
+                    <Button variant={'ghost'} size={'icon'}>
+                      <Link href={route('role.show', role.id)}>
+                        <Folder />
+                      </Link>
+                    </Button>
+                  )}
                   <RoleFormSheet purpose="edit" role={role}>
                     <Button variant={'ghost'} size={'icon'}>
                       <Edit />
                     </Button>
                   </RoleFormSheet>
-                  <RoleDeleteDialog role={role}>
-                    <Button variant={'ghost'} size={'icon'}>
-                      <Trash2 />
-                    </Button>
-                  </RoleDeleteDialog>
+                  {permissions?.canDelete && (
+                    <RoleDeleteDialog role={role}>
+                      <Button variant={'ghost'} size={'icon'}>
+                        <Trash2 />
+                      </Button>
+                    </RoleDeleteDialog>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

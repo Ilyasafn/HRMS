@@ -235,7 +235,6 @@ export default function AbsensiCard({
     return `${hh}:${mm}:${ss}`;
   };
 
-  // === Handlers (tetap sama seperti sebelumnya) ===
   const handleAbsensi = async () => {
     if (isLoading) return;
 

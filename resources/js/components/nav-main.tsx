@@ -14,7 +14,7 @@ export function NavMain({ items = [], label, user }: Props) {
   const { url } = usePage();
   const isAdmin = user?.roles?.some((role) => ['admin', 'superadmin'].includes(role.name));
 
-  console.log('p', isAdmin);
+  // console.log('p', isAdmin);
   const isActive = (href: string) => {
     try {
       const path = new URL(href).pathname;
@@ -54,7 +54,7 @@ export function NavMain({ items = [], label, user }: Props) {
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
                     {isAdmin && item.badge ? (
-                      <Badge variant="secondary" className="ml-auto animate-spin">
+                      <Badge variant="secondary" className="ml-auto">
                         {item.badge}
                       </Badge>
                     ) : null}

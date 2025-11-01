@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { capitalizeWords, em } from '@/lib/utils';
+import { capitalizeWords, em, formatRupiah } from '@/lib/utils';
 import { FormPurpose } from '@/types';
 import { Role } from '@/types/role';
 import { useForm } from '@inertiajs/react';
@@ -31,6 +31,8 @@ const RoleFormSheet: FC<Props> = ({ children, role, purpose }) => {
 
   const { data, setData, put, post, reset, processing } = useForm({
     name: role?.name ?? '',
+    gaji_pokok: role?.gaji_pokok ?? '',
+    tunjangan: role?.tunjangan ?? '',
   });
 
   const handleSubmit = () => {
@@ -55,6 +57,12 @@ const RoleFormSheet: FC<Props> = ({ children, role, purpose }) => {
     }
   };
 
+  const handleCurrencyChange = (field: string, value: string) => {
+    // Hilangkan semua karakter non-digit
+    const numericValue = value.replace(/[^\d]/g, '');
+    setData(field, numericValue);
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -73,6 +81,22 @@ const RoleFormSheet: FC<Props> = ({ children, role, purpose }) => {
           >
             <FormControl label="Nama role">
               <Input type="text" placeholder="Name" value={data.name} onChange={(e) => setData('name', e.target.value)} />
+            </FormControl>
+            <FormControl label="Tunjangan" className="w-full">
+              <Input
+                className="w-full"
+                type="text"
+                value={formatRupiah(data.gaji_pokok)}   
+                onChange={(e) => handleCurrencyChange('gaji_pokok', e.target.value)}
+              />
+            </FormControl>
+            <FormControl label="Tunjangan" className="w-full">
+              <Input
+                className="w-full"
+                type="text"
+                value={formatRupiah(data.tunjangan)}
+                onChange={(e) => handleCurrencyChange('tunjangan', e.target.value)}
+              />
             </FormControl>
           </form>
         </ScrollArea>

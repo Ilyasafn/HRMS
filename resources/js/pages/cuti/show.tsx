@@ -54,7 +54,7 @@ const ShowCuti: FC<Props> = ({ cuti }) => {
               <CardTitle>{cuti.user?.name}</CardTitle>
               <StatusBadge status={cuti.approval_status} />
             </div>
-            {permissions?.canUpdate && (
+            {permissions?.canApprove && (
               <div className="order-2 w-fit">
                 <CutiApprovalStatusDialog cuti={cuti}>
                   <Button variant={'ghost'} size={'icon'}>

@@ -51,11 +51,13 @@ const DivisiList: FC<Props> = ({ divisis, query }) => {
               </Button>
             </DivisiFormSheet>
           )}
-          <Button variant={'destructive'} size={'icon'} asChild>
-            <Link href={route('divisi.archived')}>
-              <FolderArchive />
-            </Link>
-          </Button>
+          {permissions?.canArchived && (
+            <Button variant={'destructive'} size={'icon'} asChild>
+              <Link href={route('divisi.archived')}>
+                <FolderArchive />
+              </Link>
+            </Button>
+          )}
         </>
       }
     >

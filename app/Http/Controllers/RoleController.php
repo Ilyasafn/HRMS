@@ -26,6 +26,12 @@ class RoleController extends Controller
                 $role->permissions;
             }),
             'query' => $request->input(),
+            'permissions' => [
+                'canEdit' => $this->user->can('edit role'),
+                'canShow' => $this->user->can('show role'),
+                'canCreate' => $this->user->can('create role'),
+                'canDelete' => $this->user->can('delete role'),
+            ]
         ]);
     }
 
@@ -46,9 +52,7 @@ class RoleController extends Controller
     public function show(Role $role)
     {
         $this->pass('show role');
-
-        // dd($role->load('permissions')->toArray());
-
+        
         return Inertia::render('role/show', [
             'role' => $role->load('permissions'),
             'permits' => Permission::get(),

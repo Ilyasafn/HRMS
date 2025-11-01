@@ -62,30 +62,26 @@ class UserController extends Controller
         $roleName = $data['roles'][0] ?? null;
         $role = Role::where('name', $roleName)->first();
         
+        // Ambil gaji pokok berdasarkan role/jabatan
         $defaultGaji = $role->gaji_pokok ?? 0;
+        // Ambil tunjangan berdasarkan role/jabatan
         $defaultTunjangan = $role->tunjangan ?? 0;
-
+        
+        // Set custom gaji pokok 
         $data['custom_gaji_pokok'] = isset($data['gaji_pokok']) && $data['gaji_pokok'] !== '' && $data['gaji_pokok'] !== null
-            ? (float) $data['gaji_pokok']
-            : (float) $defaultGaji;
+        ? (float) $data['gaji_pokok']
+        : (float) $defaultGaji;
 
+        // Set custom tunjangan
         $data['custom_tunjangan'] = isset($data['tunjangan']) && $data['tunjangan'] !== '' && $data['tunjangan'] !== null
-            ? (float) $data['tunjangan']
-            : (float) $defaultTunjangan;
+        ? (float) $data['tunjangan']
+        : (float) $defaultTunjangan;
 
+        // override data gaji pokok dan tunjangan jika gaji pokok dan tunjangan menggunakan custom value
         unset($data['gaji_pokok'], $data['tunjangan']);
 
         $user = User::create($data);
         $user->syncRoles($data['roles']);
-
-        Log::info('DATA SAAT SIMPAN', [
-            'input' => $data,
-            'role' => $role,
-        ]);
-
-        Log::info('FINAL DATA', $data);
-
-        Log::info('AFTER VALIDATION', $request->validated());
     }
 
     /**
@@ -94,36 +90,33 @@ class UserController extends Controller
     public function show(User $user)
     {
         $this->pass('show user');
-
         $user->load(['roles', 'divisi']);
 
-    $totalHadir = Absensi::where('user_id', $user->id)
+        $totalHadir = Absensi::where('user_id', $user->id)
         ->where('status', 'Hadir')
         ->count();
 
-    $totalTelat = Absensi::where('user_id', $user->id)
-        ->where('status', 'Telat')
-        ->count();
+        $totalTelat = Absensi::where('user_id', $user->id)
+            ->where('status', 'Telat')
+            ->count();
 
-    $totalIzin = Absensi::where('user_id', $user->id)
-        ->whereIn('status', ['Sakit', 'Izin', 'Lainnya'])
-        
-        ->count();
+        $totalIzin = Absensi::where('user_id', $user->id)
+            ->whereIn('status', ['Sakit', 'Izin', 'Lainnya']) 
+            ->count();
 
-    $totalCuti = Cuti::where('user_id', $user->id)
-        ->where('approval_status', 'Approved')
-        ->count();
+        $totalCuti = Cuti::where('user_id', $user->id)
+            ->where('approval_status', 'Approved')
+            ->count();
 
-    $totalAlpha = Absensi::where('user_id', $user->id)
+        $totalAlpha = Absensi::where('user_id', $user->id)
         ->where('status', 'Alpha')
         ->count();
-    
 
         // Data untuk chart
         $chartData = Absensi::where('user_id', $user->id)
         ->whereYear('tanggal', now()->year)
         ->where('approval_status', 'Approved')
-         ->selectRaw('MONTH(tanggal) as month, 
+        ->selectRaw('MONTH(tanggal) as month, 
                 SUM(CASE WHEN status IN ("Hadir", "Telat") THEN 1 ELSE 0 END) as hadir,
                 SUM(CASE WHEN status = "Alpha" THEN 1 ELSE 0 END) as alpha,
                 SUM(CASE WHEN status IN ("Sakit", "Izin", "Lainnya") THEN 1 ELSE 0 END) as izin,
@@ -131,15 +124,16 @@ class UserController extends Controller
         ->groupBy('month')
         ->get()
         ->map(function ($item) {
-        return [
-            'month' => Carbon::create()->month($item->month)->format('F'),
-            'hadir' => (int) $item->hadir,       
-            'alpha' => (int) $item->alpha,   
-            'izin' => (int) $item->izin,         
-            'cuti' => (int) $item->cuti          
-        ];
-    });
+            return [
+                'month' => Carbon::create()->month($item->month)->format('F'),
+                'hadir' => (int) $item->hadir,       
+                'alpha' => (int) $item->alpha,   
+                'izin' => (int) $item->izin,         
+                'cuti' => (int) $item->cuti          
+            ];
+        });
 
+        // Ambil semua bulan dalam 1 tahun
         $allMonth = [];
         for($i = 1; $i <= 12; $i++) {
             $monthName = Carbon::create()->month($i)->format('F');
@@ -164,6 +158,7 @@ class UserController extends Controller
                 'alpha' => $totalAlpha,
                 'total' => $totalHadir + $totalTelat   
             ],  
+            // Implementasi nama bulan ke dalam chart
             'chart_data' => $allMonth,
             'permissions' => [
                 'canUpdate' => $this->user->can("update user"),
@@ -183,17 +178,22 @@ class UserController extends Controller
         $roleName = $data['roles'][0] ?? null;
         $role = Role::where('name', $roleName)->first();
         
+        // Ambil gaji pokok berdasarkan role/jabatan
         $defaultGaji = $role->gaji_pokok ?? 0;
+        // Ambil tunjangan berdasarkan role/jabatan
         $defaultTunjangan = $role->tunjangan ?? 0;
 
+        // Set custom gaji pokok 
         $data['custom_gaji_pokok'] = isset($data['gaji_pokok']) && $data['gaji_pokok'] !== '' && $data['gaji_pokok'] !== null
-            ? (float) $data['gaji_pokok']
-            : (float) $defaultGaji;
-
+        ? (float) $data['gaji_pokok']
+        : (float) $defaultGaji;
+        
+        // Set custom tunjangan 
         $data['custom_tunjangan'] = isset($data['tunjangan']) && $data['tunjangan'] !== '' && $data['tunjangan'] !== null
             ? (float) $data['tunjangan']
             : (float) $defaultTunjangan;
 
+        // override data gaji pokok dan tunjangan jika gaji pokok dan tunjangan menggunakan custom value
         unset($data['gaji_pokok'], $data['tunjangan']);
 
         $user->update($data);

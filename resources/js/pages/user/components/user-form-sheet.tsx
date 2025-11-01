@@ -95,7 +95,7 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
   };
 
   return (
-    <Dialog open={dialogOpen} onOpenChange={setDialogOpen} >
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <ScrollArea className="h-[34rem] w-full rounded-md">
@@ -110,7 +110,7 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
               handleSubmit();
             }}
           >
-            <FormControl label="Nama karyawan" className=''>
+            <FormControl label="Nama karyawan" className="">
               <Input type="text" placeholder="Name" value={data.name} onChange={(e) => setData('name', e.target.value)} />
             </FormControl>
 
@@ -131,6 +131,7 @@ const UserFormSheet: FC<Props> = ({ children, user, purpose }) => {
               <FormControl label="NIK (Nomor Induk Karyawan)">
                 <Input type="text" placeholder="NIK" value={data.nik} onChange={(e) => setData('nik', e.target.value)} />
               </FormControl>
+
               <FormControl label="Jenis kelamin">
                 <Select value={data.jenis_kelamin ?? ''} onValueChange={(value: 'Laki-laki' | 'Perempuan' | '') => setData('jenis_kelamin', value)}>
                   <SelectTrigger className="w-full">

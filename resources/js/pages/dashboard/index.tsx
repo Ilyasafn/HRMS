@@ -45,6 +45,7 @@ type Props = {
   cutiHariIni: [];
   pengajuanCutiAktif: [];
   isAdmin: boolean;
+  isAtasan: boolean;
   rekap_absensi?: RekapAbsensi[];
   dashboard_stats?: DashboardStats;
   chart_data?: ChartData[];
@@ -67,7 +68,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Dashboard({ absensiHariIni, isAdmin, rekap_absensi, dashboard_stats, chart_data }: Props) {
+export default function Dashboard({ absensiHariIni, isAdmin, isAtasan, rekap_absensi, dashboard_stats, chart_data }: Props) {
   // Di Dashboard component, cek:
   console.log('dashboard_stats.hari_ini:', dashboard_stats?.hari_ini);
   console.log('dashboard_stats.all_time:', dashboard_stats?.all_time);
@@ -128,6 +129,16 @@ export default function Dashboard({ absensiHariIni, isAdmin, rekap_absensi, dash
               <RekapAbsensiTable rekap_absensi={rekap_absensi} />
             </div>
           </div>
+        </>
+      )}
+
+      {/* Atasan Dashboard */}
+      {isAtasan && (
+        <>
+          <div className="space-y-6">
+            {/* Stats Cards */}
+            {dashboard_stats && <StatsWidget stats={dashboard_stats} />}
+            </div>
         </>
       )}
 

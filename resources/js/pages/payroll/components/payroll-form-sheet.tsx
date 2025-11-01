@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { capitalizeWords, em, formatRupiah } from '@/lib/utils';
+import { capitalizeWords, em, formatPeriodeLabel, formatRupiah } from '@/lib/utils';
 import { FormPurpose } from '@/types';
 import { Payroll } from '@/types/payroll';
 import { User } from '@/types/user';
@@ -185,8 +185,11 @@ const PayrollFormSheet: FC<Props> = ({ children, payroll, purpose, users }) => {
                 <SelectContent>
                   {availablePeriodes.length > 0 ? (
                     availablePeriodes.map((periode) => (
+                      // <SelectItem key={periode} value={periode}>
+                      //   {new Date(`${periode}-01`).toLocaleDateString('id-ID', { year: 'numeric', month: 'long' })}
+                      // </SelectItem>
                       <SelectItem key={periode} value={periode}>
-                        {new Date(`${periode}-01`).toLocaleDateString('id-ID', { year: 'numeric', month: 'long' })}
+                        {formatPeriodeLabel(periode)}
                       </SelectItem>
                     ))
                   ) : (

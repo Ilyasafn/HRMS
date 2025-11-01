@@ -83,7 +83,6 @@ const ArchivedUserList: FC<Props> = ({ users }) => {
             </TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Role names</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -110,7 +109,6 @@ const ArchivedUserList: FC<Props> = ({ users }) => {
                 </TableCell>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
-                <TableCell>{user.roles?.join(', ')}</TableCell>
                 <TableCell>
                   <Button variant={'ghost'} size={'icon'} onClick={() => handleRestore(user.id)}>
                     <Undo2 />

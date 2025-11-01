@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -10,11 +9,10 @@ import { SharedData } from '@/types';
 import { Absensi } from '@/types/absensi';
 import { User } from '@/types/user';
 import { Link, usePage } from '@inertiajs/react';
-import { Edit, Filter, Folder, FolderArchive, Plus, Trash2 } from 'lucide-react';
+import { Edit, Folder, FolderArchive, Plus, Trash2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import AbsensiBulkDeleteDialog from './components/absensi-bulk-delete-dialog';
 import AbsensiBulkEditSheet from './components/absensi-bulk-edit-sheet';
-import AbsensiFilterSheet from './components/absensi-filter-sheet';
 import AbsensiFormSheet from './components/absensi-form-sheet';
 
 type Props = {
@@ -54,17 +52,19 @@ const AbsensiList: FC<Props> = ({ absensis, users, query, isAdmin }) => {
               </Button>
             </AbsensiFormSheet>
           )}
-          <Button variant={'destructive'} size={'icon'} asChild>
-            <Link href={route('absensi.archived')}>
-              <FolderArchive />
-            </Link>
-          </Button>
+          {permissions?.canArchived && (
+            <Button variant={'destructive'} size={'icon'} asChild>
+              <Link href={route('absensi.archived')}>
+                <FolderArchive />
+              </Link>
+            </Button>
+          )}
         </>
       }
     >
       <div className="flex gap-2">
         <Input placeholder="Search absensis..." value={cari} onChange={(e) => setCari(e.target.value)} />
-        <AbsensiFilterSheet query={query}>
+        {/* <AbsensiFilterSheet query={query}>
           <Button>
             <Filter />
             Filter data
@@ -72,7 +72,7 @@ const AbsensiList: FC<Props> = ({ absensis, users, query, isAdmin }) => {
               <Badge variant="secondary">{Object.values(query).filter((val) => val && val !== '').length}</Badge>
             )}
           </Button>
-        </AbsensiFilterSheet>
+        </AbsensiFilterSheet> */}
         {ids.length > 0 && (
           <>
             <Button variant={'ghost'} disabled>

@@ -28,7 +28,7 @@ class CutiController extends Controller
 
         $user = Auth::user();
     
-        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();        
+        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin', 'supervisor', 'manager', 'human resource'])->exists();        
 
         $query = Cuti::with(['user', 'approvedBy']);
         if (!$isAdmin) {
@@ -60,6 +60,7 @@ class CutiController extends Controller
                 'canShow' => $this->user->can("show cuti"),
                 'canUpdate' => $this->user->can("update cuti"),
                 'canDelete' => $this->user->can("delete cuti"),
+                'canArchived' => $this->user->can('archived cuti'),
             ]
         ]);
     }
@@ -108,8 +109,8 @@ class CutiController extends Controller
     }
 
 
-private function calculateWorkingDays(string $start, string $end): int
-{
+    private function calculateWorkingDays(string $start, string $end): int
+    {
     $startDate = Carbon::parse($start);
     $endDate = Carbon::parse($end);
     
@@ -117,7 +118,7 @@ private function calculateWorkingDays(string $start, string $end): int
     $current = $startDate->copy();
     
     while ($current->lte($endDate)) {
-        // Skip Saturday (6) and Sunday (7)
+        // Skip Sabtu (6) dan Minggu (7)
         if (!$current->isWeekend()) {
             $totalDays++;
         }
@@ -125,7 +126,8 @@ private function calculateWorkingDays(string $start, string $end): int
     }
     
     return $totalDays;
-}
+    }
+
     public function approval(Request $request, Cuti $cuti) 
     {
         $this->pass('approve cuti');
@@ -146,7 +148,7 @@ private function calculateWorkingDays(string $start, string $end): int
             if($request->approval_status === 'Approved') {
                 $this->generateAbsensiFromCuti($cuti);
 
-               if ($cuti->user) {
+            if ($cuti->user) {
                 $cuti->user->decrement('sisa_cuti_tahunan', $cuti->jumlah_hari);
                 $cuti->user->increment('total_cuti_diambil', $cuti->jumlah_hari);
             } else {
@@ -211,7 +213,7 @@ private function calculateWorkingDays(string $start, string $end): int
             'tgl_pengajuan' => date('Y-m-d'),
             'tgl_mulai' => $validated['tgl_mulai'], 
             'tgl_selesai' => $validated['tgl_selesai'], 
-            'jumlah_hari' => $this->calculateWorkingDays(
+            'jumlah_hari' => $this->calculateWorkingDays( // Method yang digunakan untuk menghitung hari 
                 $validated['tgl_mulai'],
                 $validated['tgl_selesai']
             ),
@@ -232,7 +234,7 @@ private function calculateWorkingDays(string $start, string $end): int
         $cuti->load('user');
         $user = Auth::user();
 
-        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();
+        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin', 'supervisor', 'manager', 'human resource'])->exists();
 
          // Untuk user biasa, pastikan hanya bisa akses cuti sendiri
         if (!$isAdmin && $cuti->user_id !== $user->id) {
@@ -245,6 +247,7 @@ private function calculateWorkingDays(string $start, string $end): int
             'permissions' => [
                 'canUpdate' => $this->user->can("update cuti"),
                 'canDelete' => $this->user->can("delete cuti"),
+                'canApprove' => $this->user->can("approve cuti"),
             ]
         ]);
     }

@@ -1,6 +1,6 @@
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
-import { Form, Link, usePage } from '@inertiajs/react';
+import { Form, Link, useForm, usePage } from '@inertiajs/react';
 
 import DeleteUser from '@/components/delete-user';
 import HeadingSmall from '@/components/heading-small';
@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import SettingsLayout from '@/layouts/settings/layout';
+import { User } from '@/types/user';
 import { ChevronDownIcon } from 'lucide-react';
 import { useState } from 'react';
 
@@ -23,12 +24,16 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
+export default function Profile({ mustVerifyEmail, status, user }: { mustVerifyEmail: boolean; status?: string; user?: User }) {
   const { auth } = usePage<SharedData>().props;
 
   const [tglLahirOpen, setTglLahirOpen] = useState(false);
   const [tglLahir, setTglLahir] = useState<Date | undefined>(auth.user?.tgl_lahir ? new Date(auth.user.tgl_lahir) : undefined);
-  const [jenisKelamin, setJenisKelamin] = useState(auth.user?.jenis_kelamin ?? '');
+  // const [jenisKelamin, setJenisKelamin] = useState(auth.user?.jenis_kelamin ?? '');
+
+  const { data, setData } = useForm({
+    jenis_kelamin: user?.jenis_kelamin ?? '',
+  });
 
   return (
     <SettingsLayout breadcrumbs={breadcrumbs}>
@@ -150,24 +155,18 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
                 <div>
                   <Label htmlFor="jenis_kelamin">Jenis kelamin</Label>
-                  <Select
-                    value={jenisKelamin}
-                    onValueChange={(value: 'Laki-laki' | 'Perempuan' | '') => {
-                      // update state aja, gak perlu setData
-                      setJenisKelamin(value);
-                    }}
-                  >
+                  <Select value={data.jenis_kelamin ?? ''} onValueChange={(value: 'Laki-laki' | 'Perempuan' | '') => setData('jenis_kelamin', value)}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Pilih jenis kelamin" />
+                      <SelectValue placeholder={user?.jenis_kelamin ?? 'Pilih Jenis Kelamin'} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Laki-Laki">Laki-laki</SelectItem>
+                      <SelectItem value="Laki-laki">Laki-laki</SelectItem>
                       <SelectItem value="Perempuan">Perempuan</SelectItem>
                     </SelectContent>
                   </Select>
 
                   {/* Hidden input juga */}
-                  <input type="hidden" name="jenis_kelamin" value={jenisKelamin} />
+                  <input type="hidden" name="jenis_kelamin" value={data.jenis_kelamin} />
 
                   <InputError className="mt-2" message={errors.jenis_kelamin} />
                 </div>

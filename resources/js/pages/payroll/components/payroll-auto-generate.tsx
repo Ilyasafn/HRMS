@@ -13,8 +13,9 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { formatPeriodeLabel } from '@/lib/utils';
 import { useForm } from '@inertiajs/react';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { X } from 'lucide-react';
 import { FC, PropsWithChildren, useState } from 'react';
@@ -62,7 +63,7 @@ const PayrollAutoGenerateAll: FC<Props> = ({ children }) => {
     post(route('payroll.autoGenerate'), {
       preserveScroll: true,
       onSuccess: () => {
-        const periodeLabel = format(new Date(`${data.periode}-01`), 'MMMM yyyy', { locale: id });
+        const periodeLabel = format(parse(data.periode, 'yyyy-MM', new Date()), 'MMMM yyyy', { locale: id });
         toast.success(`Payroll ${periodeLabel} berhasil digenerate`);
         setOpen(false);
       },
@@ -109,7 +110,7 @@ const PayrollAutoGenerateAll: FC<Props> = ({ children }) => {
                   {availablePeriodes.length > 0 ? (
                     availablePeriodes.map((periode) => (
                       <SelectItem key={periode} value={periode}>
-                        {format(new Date(`${periode}-01`), 'MMMM yyyy', { locale: id })}
+                        {formatPeriodeLabel(periode)}
                       </SelectItem>
                     ))
                   ) : (

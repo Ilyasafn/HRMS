@@ -45,13 +45,15 @@ class DashboardController extends Controller
             ->where('tgl_selesai', '>=', date('Y-m-d'))
             ->get();
 
-        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();
+        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin', ])->exists();
+        $isAtasan = $user->roles()->whereIn('name', ['supervisor', 'human resource' ])->exists();
 
         $data = [
             'absensiHariIni' => $absensiHariIni,
             'cutiHariIni' => $cutiHariIni,
             'pengajuanCutiAktif' => $pengajuanCutiAktif,
             'isAdmin' => $isAdmin,
+            'isAtasan' => $isAtasan,
         ];
 
         // admin handler
@@ -59,6 +61,11 @@ class DashboardController extends Controller
             $data['rekap_absensi'] = $this->getRekapAbsensiAllUsers();
             $data['dashboard_stats'] = $this->getDashboardStats();
             $data['chart_data'] = $this->getChartAbsensiData(); 
+        }
+
+        if($isAtasan) {
+            $data['rekap_absensi'] = $this->getRekapAbsensiAllUsers();
+            $data['dashboard_stats'] = $this->getDashboardStats();
         }
 
         return Inertia::render('dashboard/index',  [

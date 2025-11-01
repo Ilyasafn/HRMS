@@ -25,6 +25,7 @@ export type Absensi = {
   updated_at: string;
   user_counts?: number;
   pending_counts: number;
+  isAdmin: boolean | number;
 };
 
 export type TotalAbsensi = {

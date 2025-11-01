@@ -11,14 +11,13 @@ import { SharedData } from '@/types';
 import { Cuti } from '@/types/cuti';
 import { User } from '@/types/user';
 import { Link, usePage } from '@inertiajs/react';
-import { Edit, Filter, Folder, FolderArchive, Image, Plus, Trash2 } from 'lucide-react';
+import { Edit, Filter, Folder, FolderArchive, Plus, Trash2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import CutiBulkDeleteDialog from './components/cuti-bulk-delete-dialog';
 import CutiBulkEditSheet from './components/cuti-bulk-edit-sheet';
 import CutiDeleteDialog from './components/cuti-delete-dialog';
 import CutiFilterSheet from './components/cuti-filter-sheet';
 import CutiFormSheet from './components/cuti-form-sheet';
-import CutiUploadMediaSheet from './components/cuti-upload-sheet';
 
 type Props = {
   cutis: Cuti[];
@@ -65,7 +64,7 @@ const CutiList: FC<Props> = ({ cutis, query, users, isAdmin }) => {
             </CutiFormSheet>
           )}
           {/* Sembunyikan archive button untuk user biasa jika tidak perlu */}
-          {(isAdmin || permissions?.canViewArchive) && (
+          {permissions?.canArchived && (
             <Button variant={'destructive'} size={'icon'} asChild>
               <Link href={route('cuti.archived')}>
                 <FolderArchive />
@@ -202,11 +201,6 @@ const CutiList: FC<Props> = ({ cutis, query, users, isAdmin }) => {
                   )}
                   {permissions?.canUpdate && (
                     <>
-                      <CutiUploadMediaSheet cuti={cuti}>
-                        <Button variant={'ghost'} size={'icon'}>
-                          <Image />
-                        </Button>
-                      </CutiUploadMediaSheet>
                       <CutiFormSheet purpose="edit" cuti={cuti}>
                         <Button variant={'ghost'} size={'icon'}>
                           <Edit />

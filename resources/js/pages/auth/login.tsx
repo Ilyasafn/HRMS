@@ -1,5 +1,4 @@
 import FormControl from '@/components/form-control';
-import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -15,8 +14,8 @@ interface LoginProps {
 
 export default function Login({ status, canResetPassword }: LoginProps) {
   const { data, setData, post, processing } = useForm({
-    email: 'admin@gmail.com',
-    password: 'password',
+    email: '',
+    password: '',
     remember: false,
   });
 
@@ -33,19 +32,19 @@ export default function Login({ status, canResetPassword }: LoginProps) {
         <>
           <div className="grid gap-6">
             <FormControl label="Email">
-              <Input type="email" value={data.email} required placeholder="email@example.com" onChange={(e) => setData('email', e.target.value)} />
+              <Input type="email" value={data.email} required placeholder="Masukkan email anda" onChange={(e) => setData('email', e.target.value)} />
             </FormControl>
             <FormControl
               label="Password"
-              action={
-                <>
-                  {canResetPassword && (
-                    <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
-                      Forgot password?
-                    </TextLink>
-                  )}
-                </>
-              }
+              // action={
+              //   <>
+              //     {canResetPassword && (
+              //       <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
+              //         Forgot password?
+              //       </TextLink>
+              //     )}
+              //   </>
+              // }
             >
               <Input type="password" required placeholder="Password" value={data.password} onChange={(e) => setData('password', e.target.value)} />
             </FormControl>
@@ -61,12 +60,12 @@ export default function Login({ status, canResetPassword }: LoginProps) {
             </Button>
           </div>
 
-          <div className="text-center text-sm text-muted-foreground">
+          {/* <div className="text-center text-sm text-muted-foreground">
             Don't have an account?{' '}
             <TextLink href={route('register')} tabIndex={5}>
               Sign up
             </TextLink>
-          </div>
+          </div> */}
         </>
       </form>
 
