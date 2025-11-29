@@ -21,9 +21,10 @@ type Props = {
   absensis: Absensi[];
   users: User[];
   query: { [key: string]: string };
+  isAdmin: boolean;
 };
 
-const AbsensiList: FC<Props> = ({ absensis, users, query }) => {
+const AbsensiList: FC<Props> = ({ absensis, users, query, isAdmin }) => {
   const [ids, setIds] = useState<number[]>([]);
   const [cari, setCari] = useState('');
 
@@ -138,11 +139,18 @@ const AbsensiList: FC<Props> = ({ absensis, users, query }) => {
                 <TableCell>{dateDFY(absensi?.tanggal)}</TableCell>
                 <TableCell className="text-center">{absensi?.user_counts ?? 0}</TableCell>
                 <TableCell>
-                  <Button variant={'ghost'} size={'icon'}>
-                    <Link href={route('absensi.tanggal.show', { tanggal: String(absensi.tanggal) })}>
-                      <Folder />
-                    </Link>
-                  </Button>
+                  <div className="relative inline-block">
+                    <Button variant={'ghost'} size={'icon'}>
+                      <Link href={route('absensi.tanggal.show', { tanggal: String(absensi.tanggal) })}>
+                        <Folder />
+                      </Link>
+                    </Button>
+                    {isAdmin && absensi.pending_counts > 0 && (
+                      <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-yellow-600 text-[10px] text-white">
+                        {absensi.pending_counts}
+                      </span>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

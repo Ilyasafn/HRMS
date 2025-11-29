@@ -23,6 +23,7 @@ export interface NavItem {
   icon?: LucideIcon | null;
   isActive?: boolean;
   available?: boolean;
+  badge?: number;
 }
 
 export interface SharedData {

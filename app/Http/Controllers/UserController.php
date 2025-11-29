@@ -13,6 +13,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 
@@ -57,9 +58,34 @@ class UserController extends Controller
         $this->pass('create user');
 
         $data = $request->validated();
-        $user = User::create($data);
 
+        $roleName = $data['roles'][0] ?? null;
+        $role = Role::where('name', $roleName)->first();
+        
+        $defaultGaji = $role->gaji_pokok ?? 0;
+        $defaultTunjangan = $role->tunjangan ?? 0;
+
+        $data['custom_gaji_pokok'] = isset($data['gaji_pokok']) && $data['gaji_pokok'] !== '' && $data['gaji_pokok'] !== null
+            ? (float) $data['gaji_pokok']
+            : (float) $defaultGaji;
+
+        $data['custom_tunjangan'] = isset($data['tunjangan']) && $data['tunjangan'] !== '' && $data['tunjangan'] !== null
+            ? (float) $data['tunjangan']
+            : (float) $defaultTunjangan;
+
+        unset($data['gaji_pokok'], $data['tunjangan']);
+
+        $user = User::create($data);
         $user->syncRoles($data['roles']);
+
+        Log::info('DATA SAAT SIMPAN', [
+            'input' => $data,
+            'role' => $role,
+        ]);
+
+        Log::info('FINAL DATA', $data);
+
+        Log::info('AFTER VALIDATION', $request->validated());
     }
 
     /**
@@ -96,6 +122,7 @@ class UserController extends Controller
         // Data untuk chart
         $chartData = Absensi::where('user_id', $user->id)
         ->whereYear('tanggal', now()->year)
+        ->where('approval_status', 'Approved')
          ->selectRaw('MONTH(tanggal) as month, 
                 SUM(CASE WHEN status IN ("Hadir", "Telat") THEN 1 ELSE 0 END) as hadir,
                 SUM(CASE WHEN status = "Alpha" THEN 1 ELSE 0 END) as alpha,
@@ -152,8 +179,24 @@ class UserController extends Controller
         $this->pass('update user');
 
         $data = $request->validated();
-        $user->update($data);
 
+        $roleName = $data['roles'][0] ?? null;
+        $role = Role::where('name', $roleName)->first();
+        
+        $defaultGaji = $role->gaji_pokok ?? 0;
+        $defaultTunjangan = $role->tunjangan ?? 0;
+
+        $data['custom_gaji_pokok'] = isset($data['gaji_pokok']) && $data['gaji_pokok'] !== '' && $data['gaji_pokok'] !== null
+            ? (float) $data['gaji_pokok']
+            : (float) $defaultGaji;
+
+        $data['custom_tunjangan'] = isset($data['tunjangan']) && $data['tunjangan'] !== '' && $data['tunjangan'] !== null
+            ? (float) $data['tunjangan']
+            : (float) $defaultTunjangan;
+
+        unset($data['gaji_pokok'], $data['tunjangan']);
+
+        $user->update($data);
         $user->syncRoles($data['roles']);
     }
 

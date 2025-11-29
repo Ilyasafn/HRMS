@@ -37,6 +37,9 @@ class StoreUserRequest extends FormRequest
             'custom_gaji_pokok' => 'nullable|min:0',
             'custom_tunjangan' => 'nullable|min:0',
             'password' => 'required|confirmed',
+
+            'gaji_pokok' => 'nullable|numeric',
+            'tunjangan' => 'nullable|numeric',
         ];
     }
     
@@ -58,6 +61,8 @@ class StoreUserRequest extends FormRequest
             'custom_tunjangan.min' => 'Tunjangan minimal 0.',
             'password.required' => 'Password wajib diisi.',
             'password.confirmed' => 'Konfirmasi password tidak sesuai.',
+            'gaji_pokok.numeric' => 'Gaji pokok harus angka.',
+            'tunjangan.numeric' => 'Tunjangan harus angka.',
         ];
     }
 }

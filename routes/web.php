@@ -69,11 +69,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('payroll/bulk', [PayrollController::class, 'bulkDelete'])->name('payroll.bulk.destroy');
     Route::put('payroll/{payroll}/approve', [PayrollController::class, 'approveApprovalStatus'])->name('payroll.approve');
     Route::put('payroll/{payroll}/approve-status', [PayrollController::class, 'approveApproval'])->name('payroll.approveStatus');
+    Route::post('/payroll/auto-generate', [PayrollController::class, 'autoGenerate'])->name('payroll.autoGenerate');
+    Route::get('/payroll/available-periodes-all', [PayrollController::class, 'availablePeriodesAll'])->name('payroll.availablePeriodesAll');
     Route::apiResource('payroll', PayrollController::class);
     Route::get('payroll/periode/{periode}', [PayrollController::class, 'showByPeriode'])->name('payroll.periode.show');
     Route::get('payroll/periode/{periode}/{user}', [PayrollController::class, 'showUserPayroll'])->name('payroll.user.show');
     Route::get('/payroll/available-periodes/{user}', [PayrollController::class, 'availablePeriodes'])->name('payroll.availablePeriodes');
     Route::get('/payroll/{user}/{periode}/summary', [PayrollController::class, 'absensiSummary'])->name('payroll.absensiSummary');
+    
+
 
     Route::get('/debug-payroll-schema', function() {
     $columns = Schema::getColumns('payrolls');

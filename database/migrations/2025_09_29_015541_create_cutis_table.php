@@ -29,7 +29,7 @@ return new class extends Migration
                 'Pending', 
                 'Approved', 
                 'Rejected', 
-                'Cancelled'
+                'Canceled'
             ])->nullable()->default('Pending');
             $table->softDeletes();
             $table->timestamps();

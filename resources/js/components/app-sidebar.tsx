@@ -1,15 +1,19 @@
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookCheck, BookMarked, Building, Database, KeySquare, LayoutGrid, ReceiptText, Users, UserSearch } from 'lucide-react';
+import { BookCheck, BookMarked, Building, Database, KeySquare, LayoutGrid, ReceiptText, UserSearch } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const footerNavItems: NavItem[] = [];
 
 export function AppSidebar() {
-  const { menus } = usePage<{ menus: Record<string, boolean> }>().props;
+  const { menus, pending } = usePage<{
+    menus: Record<string, boolean>;
+    pending?: { absensi: number; cuti: number; payroll: number };
+  }>().props;
+
+  const { auth } = usePage().props;
 
   const mainNavItems: NavItem[] = [
     {
@@ -17,6 +21,9 @@ export function AppSidebar() {
       href: route('dashboard'),
       icon: LayoutGrid,
     },
+  ];
+
+  const secondNavItems: NavItem[] = [
     {
       title: 'Divisi',
       href: route('divisi.index'),
@@ -29,28 +36,29 @@ export function AppSidebar() {
       icon: UserSearch,
       available: menus.user,
     },
+  ];
+
+  const thirdNavItems: NavItem[] = [
     {
       title: 'Absensi',
       href: route('absensi.index'),
       icon: BookCheck,
       available: menus.absensi,
+      badge: pending?.absensi,
     },
     {
       title: 'Cuti',
       href: route('cuti.index'),
       icon: BookMarked,
       available: menus.cuti,
+      badge: pending?.cuti,
     },
     {
       title: 'Payroll',
       href: route('payroll.index'),
       icon: ReceiptText,
       available: menus.payroll,
-    },
-    {
-      title: 'Documentation',
-      href: route('documentation'),
-      icon: Users,
+      badge: pending?.payroll,
     },
   ];
 
@@ -69,8 +77,12 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="space-y-4">
-        <NavMain items={mainNavItems} label="Dashboard" />
+        <NavMain items={mainNavItems} label="Dashboard" user={auth.user} />
+        <NavMain items={secondNavItems} label="Data Perusahaan" user={auth.user} />
+        <NavMain items={thirdNavItems} label="Data Absensi" user={auth.user} />
+
         <NavMain
+          user={auth.user}
           items={[
             {
               title: 'Role & permission',
@@ -89,9 +101,9 @@ export function AppSidebar() {
         />
       </SidebarContent>
 
-      <SidebarFooter>
+      {/* <SidebarFooter>
         <NavFooter items={footerNavItems} className="mt-auto" />
-      </SidebarFooter>
+      </SidebarFooter> */}
     </Sidebar>
   );
 }

@@ -98,6 +98,11 @@ const ShowUser: FC<Props> = ({ user, total_absensi, chart_data }) => {
             <CardDescription>Total Cuti Diambil: {user.total_cuti_diambil} hari</CardDescription>
             <CardDescription>Gaji Pokok: {formatRupiah(user?.custom_gaji_pokok)}</CardDescription>
             <CardDescription>Tunjangan: {formatRupiah(user?.custom_tunjangan)}</CardDescription>
+            <div className="mt-2">
+              <Link href={route('payroll.index', { user_id: user.id })} className="">
+                <Button className="w-full">Lihat detail payroll</Button>
+              </Link>
+            </div>
           </CardHeader>
         </Card>
 
@@ -115,14 +120,14 @@ const ShowUser: FC<Props> = ({ user, total_absensi, chart_data }) => {
             <CardDescription className="font-semibold text-purple-600">Total Cuti: {user.total_cuti_diambil} hari</CardDescription>
             <CardDescription className="font-semibold text-red-600">Total Tidak Hadir (Alpha): {total_absensi.alpha} hari</CardDescription>
             <CardDescription className="border-t pt-2 font-semibold text-gray-600">Total Kehadiran: {total_absensi.total} hari</CardDescription>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="mt-2 grid grid-cols-2 gap-2">
               <div className="">
-                <Link href={route('absensi.index')} className="">
+                <Link href={route('absensi.index', { user_id: user.id })} className="">
                   <Button className="w-full">Lihat detail absensi</Button>
                 </Link>
               </div>
               <div className="">
-                <Link href={route('cuti.index')} className="">
+                <Link href={route('cuti.index', { user_id: user.id })} className="">
                   <Button className="w-full">Lihat detail cuti</Button>
                 </Link>
               </div>

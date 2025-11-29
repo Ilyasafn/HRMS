@@ -75,7 +75,7 @@ const StatsWidget: FC<Props> = ({ stats }) => {
         </AccordionItem>
 
         <AccordionItem value="item-2">
-          <AccordionTrigger>Statistik Absensi All Time</AccordionTrigger>
+          <AccordionTrigger>Statistik Absensi Bulan Ini</AccordionTrigger>
           <AccordionContent>
             {/* Absensi All Time */}
             <div>

@@ -32,6 +32,8 @@ class User extends Authenticatable implements HasMedia
         'tgl_lahir',
         'tgl_masuk',
         'jenis_kelamin',
+        'sisa_cuti_tahunan',
+        'total_cuti_diambil',
         'alamat',
         'no_telp',
         'status',

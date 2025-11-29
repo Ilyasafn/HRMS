@@ -28,12 +28,15 @@ class CutiController extends Controller
 
         $user = Auth::user();
     
-        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();
+        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();        
 
         $query = Cuti::with(['user', 'approvedBy']);
         if (!$isAdmin) {
-            $query->where('user_id', $user->id)
-            ;
+            $query->where('user_id', $user->id);
+        }
+
+        if ($request->has('user_id')) {
+            $query->where('user_id', $request->user_id);
         }
         
         $cutis = $query->orderBy('created_at', 'desc')
@@ -41,7 +44,7 @@ class CutiController extends Controller
                 $q->whereNotIn('name', ['superadmin']); // Exclude superadmin
         })
         ->get();
-        
+
         $users = [];
         if ($isAdmin) {
             $users = User::select('id', 'name')->get();

@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import StatusBadge from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
@@ -44,13 +43,6 @@ const ShowDivisi: FC<Props> = ({ divisi, users }) => {
         </>
       }
     >
-      <Card>
-        <CardHeader>
-          <CardTitle>{divisi.name}</CardTitle>
-          <CardDescription>{divisi.description}</CardDescription>
-        </CardHeader>
-      </Card>
-
       <Table>
         <TableHeader>
           <TableRow>
@@ -59,7 +51,7 @@ const ShowDivisi: FC<Props> = ({ divisi, users }) => {
             <TableHead>Email</TableHead>
             <TableHead>NIK</TableHead>
             <TableHead>Jenis Kelamin</TableHead>
-            <TableHead>No. Telepon</TableHead>
+            <TableHead>No Handphone</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Action</TableHead>
           </TableRow>

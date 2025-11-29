@@ -8,9 +8,10 @@ import AppLayout from '@/layouts/app-layout';
 import { SharedData } from '@/types';
 import { Payroll } from '@/types/payroll';
 import { User } from '@/types/user';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Edit, Filter, Folder, Plus, Trash2 } from 'lucide-react';
 import { FC, useState } from 'react';
+import PayrollAutoGenerateAll from './components/payroll-auto-generate';
 import PayrollBulkDeleteDialog from './components/payroll-bulk-delete-dialog';
 import PayrollBulkEditSheet from './components/payroll-bulk-edit-sheet';
 import PayrollDeleteDialog from './components/payroll-delete-dialog';
@@ -28,7 +29,6 @@ const PayrollList: FC<Props> = ({ payrolls, query, users }) => {
   const [cari, setCari] = useState('');
 
   const { permissions } = usePage<SharedData>().props;
-
   // console.log('payroll data:', payrolls);
 
   console.log(
@@ -52,13 +52,27 @@ const PayrollList: FC<Props> = ({ payrolls, query, users }) => {
       description="Manage your payrolls"
       actions={
         <>
+          {/* {permissions?.canAdd && (
+          )} */}
           {permissions?.canAdd && (
-            <PayrollFormSheet purpose="create" users={users}>
-              <Button>
-                <Plus />
-                Create new payroll
-              </Button>
-            </PayrollFormSheet>
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              <PayrollFormSheet purpose="create" users={users}>
+                <Button>
+                  <Plus />
+                  Create new payroll
+                </Button>
+              </PayrollFormSheet>
+              <PayrollAutoGenerateAll>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    router.post(route('payroll.autoGenerate'));
+                  }}
+                >
+                  <Plus /> Auto Generate Payroll
+                </Button>
+              </PayrollAutoGenerateAll>
+            </div>
           )}
         </>
       }
@@ -141,11 +155,12 @@ const PayrollList: FC<Props> = ({ payrolls, query, users }) => {
                 <TableCell>{payroll.jumlah_karyawan}</TableCell>
                 <TableCell>
                   {permissions?.canShow && (
-                    <Button variant={'ghost'} size={'icon'}>
-                      <Link href={route('payroll.periode.show', { periode: String(payroll.periode_bulan) })}>
+                    <Link href={route('payroll.periode.show', { periode: String(payroll.periode_bulan) })}>
+                      <Button variant={'ghost'} size={'icon'}>
                         <Folder />
-                      </Link>
-                    </Button>
+                        <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-xs text-white"></span>
+                      </Button>
+                    </Link>
                   )}
                   {permissions?.canUpdate && (
                     <>

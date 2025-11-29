@@ -32,7 +32,7 @@ const AdminAbsensiChart: FC<Props> = ({ chart_data = [] }) => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Rekap Absensi Per Bulan</CardTitle>
+          <CardTitle className="md:text-md text-sm">Rekap Absensi Per Bulan</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="py-8 text-center text-gray-500">Tidak ada data chart</div>
@@ -44,8 +44,10 @@ const AdminAbsensiChart: FC<Props> = ({ chart_data = [] }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Rekap Absensi Bulanan</CardTitle>
-        <CardDescription>Statistik absensi semua karyawan tahun {new Date().getFullYear()}</CardDescription>
+        <div>
+          <CardTitle className="text-sm md:text-lg">Rekap Absensi Bulanan</CardTitle>
+          <CardDescription>Statistik absensi semua karyawan tahun {new Date().getFullYear()}</CardDescription>
+        </div>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={350}>

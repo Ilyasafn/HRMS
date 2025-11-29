@@ -12,6 +12,7 @@ import { FC, useState } from 'react';
 import RoleDeleteDialog from './components/role-delete-dialog';
 import RoleFilterSheet from './components/role-filter-sheet';
 import RoleFormSheet from './components/role-form-sheet';
+import { formatRupiah } from '@/lib/utils';
 
 type Props = {
   roles: Role[];
@@ -88,6 +89,8 @@ const RoleList: FC<Props> = ({ roles, query }) => {
               </Button>
             </TableHead>
             <TableHead>Name</TableHead>
+            <TableHead>Gaji Pokok</TableHead>
+            <TableHead>Tunjangan</TableHead>
             <TableHead>Permissions</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -114,6 +117,8 @@ const RoleList: FC<Props> = ({ roles, query }) => {
                   </Button>
                 </TableCell>
                 <TableCell>{role.name}</TableCell>
+                <TableCell>{formatRupiah(role.gaji_pokok)}</TableCell>
+                <TableCell>{formatRupiah(role.tunjangan)}</TableCell>
                 <TableCell>{role.permissions?.length} permissions</TableCell>
                 <TableCell>
                   <Button variant={'ghost'} size={'icon'}>

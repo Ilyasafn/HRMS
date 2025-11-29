@@ -24,6 +24,7 @@ export type Absensi = {
   created_at: string;
   updated_at: string;
   user_counts?: number;
+  pending_counts: number;
 };
 
 export type TotalAbsensi = {

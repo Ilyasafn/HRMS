@@ -118,10 +118,10 @@ export function capitalizeWords(str: string): string {
 }
 
 export function formatRupiah(angka: number | string): string {
-  const numericValue = typeof angka === 'string' ? parseFloat(angka) : angka;
+  const numericValue = typeof angka === 'string' ? parseFloat(angka.replace(/[^\d.-]/g, '')) : angka;
 
   // Handle NaN, null, undefined
-  if (!numericValue || isNaN(numericValue)) {
+  if (numericValue == null || isNaN(numericValue)) {
     return 'Rp 0';
   }
 
@@ -130,6 +130,22 @@ export function formatRupiah(angka: number | string): string {
     currency: 'IDR',
     minimumFractionDigits: 0,
   }).format(numericValue);
+}
+
+export function parseRupiah(value: string | number): number {
+  if (typeof value === 'number') return value;
+
+  if (typeof value !== 'string') return 0;
+
+  // Hapus semua karakter kecuali digit dan koma
+  const cleaned = value
+    .replace(/[^\d,]/g, '') // keep only digits and commas
+    .replace(',', '.'); // ubah koma jadi titik buat decimal
+
+  const parsed = parseFloat(cleaned);
+
+  // Kalau hasil NaN, fallback ke 0
+  return isNaN(parsed) ? 0 : parsed;
 }
 
 // utils/dateUtils.ts atau tambah di lib/utils.ts

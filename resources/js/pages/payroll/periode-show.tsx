@@ -168,15 +168,6 @@ const PayrollUserList: FC<Props> = ({ payrolls, query = {}, users }) => {
                         </Link>
                       </Button>
                     )}
-                    {permissions?.canUpdate && (
-                      <>
-                        <PayrollFormSheet purpose="edit" payroll={payroll} users={users}>
-                          <Button variant={'ghost'} size={'icon'}>
-                            <Edit />
-                          </Button>
-                        </PayrollFormSheet>
-                      </>
-                    )}
                     {permissions?.canDelete && (
                       <PayrollDeleteDialog payroll={payroll}>
                         <Button variant={'ghost'} size={'icon'}>

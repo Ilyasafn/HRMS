@@ -1,6 +1,6 @@
 // resources/js/Components/RekapAbsensiTable.tsx
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useSafePagination } from '@/lib/useSafePagination';
 import { Link } from '@inertiajs/react';
@@ -61,21 +61,23 @@ const RekapAbsensiTable: FC<Props> = ({ rekap_absensi = [] }) => {
 
   return (
     <div>
-      <Card>
+      <Card className="h-full">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Rekap Absensi Per Karyawan</CardTitle>
+              <CardTitle className="text-sm md:text-lg">Rekap Absensi Per Karyawan</CardTitle>
               <CardDescription>Detail kehadiran semua karyawan</CardDescription>
             </div>
             <Link href={route('absensi.index')}>
-              <Button variant="outline">Lihat Semua Absensi</Button>
+              {/* <Button className="md:size-max" variant="outline">
+                Lihat Semua Absensi
+              </Button> */}
             </Link>
           </div>
         </CardHeader>
-        <CardContent>
-          <div>
-            <div className="overflow-hidden rounded-md border">
+        <CardContent className="flex">
+          <div className="overflow-x-auto">
+            <div className="rounded-md border">
               <Table className="min-w-full divide-y">
                 <TableHeader>
                   {table.getHeaderGroups().map((headerGroup) => (
@@ -105,17 +107,19 @@ const RekapAbsensiTable: FC<Props> = ({ rekap_absensi = [] }) => {
                 </TableBody>
               </Table>
             </div>
-            <div className="flex items-center justify-center gap-2 p-4 md:justify-end">
-              <Button variant={'outline'} size={'sm'} onClick={() => pagination.safePreviousPage()} disabled={!pagination.canPreviousPage}>
-                Previous
-              </Button>
-              <span className="text-sm">
-                Page {pagination.pageIndex + 1} of {pagination.pageCount}
-              </span>
-              <Button variant={'outline'} size={'sm'} onClick={() => pagination.safeNextPage()} disabled={!pagination.canNextPage}>
-                Next
-              </Button>
-            </div>
+            <CardFooter className="flex items-center justify-between p-2 md:justify-end">
+              <div className="space-x-4">
+                <Button variant={'outline'} size={'sm'} onClick={() => pagination.safePreviousPage()} disabled={!pagination.canPreviousPage}>
+                  Previous
+                </Button>
+                <span className="text-sm">
+                  Page {pagination.pageIndex + 1} of {pagination.pageCount}
+                </span>
+                <Button variant={'outline'} size={'sm'} onClick={() => pagination.safeNextPage()} disabled={!pagination.canNextPage}>
+                  Next
+                </Button>
+              </div>
+            </CardFooter>
           </div>
         </CardContent>
       </Card>

@@ -16,10 +16,10 @@ class RoleSeeder extends Seeder
     {
         $roles = [
             ['name' => 'superadmin', 'gaji_pokok' => 0, 'tunjangan' => 0],
-            ['name' => 'admin', 'gaji_pokok' => 8000000, 'tunjangan' => 2000000],
+            ['name' => 'admin', 'gaji_pokok' => 5000000, 'tunjangan' => 2500000],
             ['name' => 'staff', 'gaji_pokok' => 4000000, 'tunjangan' => 500000],
-            ['name' => 'supervisor', 'gaji_pokok' => 6000000, 'tunjangan' => 1000000],
-            ['name' => 'manager', 'gaji_pokok' => 10000000, 'tunjangan' => 3000000],
+            ['name' => 'supervisor', 'gaji_pokok' => 10000000, 'tunjangan' => 3500000],
+            ['name' => 'manager', 'gaji_pokok' => 17500000, 'tunjangan' => 5000000],
         ];
 
         foreach ($roles as $data) {

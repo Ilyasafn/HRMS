@@ -6,6 +6,7 @@ use App\Http\Requests\StorePayrollRequest;
 use App\Http\Requests\UpdatePayrollRequest;
 use App\Http\Requests\BulkUpdatePayrollRequest;
 use App\Http\Requests\BulkDeletePayrollRequest;
+use App\Models\Absensi;
 use App\Models\Payroll;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -37,16 +38,30 @@ class PayrollController extends Controller
                 $q->whereNotIn('name', ['superadmin']); // Exclude superadmin
             });
 
-         if (!$isAdmin) {
+        if (!$isAdmin) {
             $query->where('user_id', $user->id);
         }
 
-        $payrolls = $query->get()
-        ->map(function($item) { 
-            $item->periode_label = Carbon::createFromFormat('Y-m', $item->periode_bulan)
-                ->translatedFormat('F Y');
-            return $item;
-        });
+        if ($request->has('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        $payrolls = Payroll::with('user.roles')
+        ->whereHas('user.roles', function($q) {
+            $q->whereNotIn('name', ['superadmin']);
+        })
+        ->get()
+        ->groupBy(fn($p) => Carbon::parse($p->periode)->format('Y-m'))
+        ->map(function($group, $key) {
+            return [
+                'periode_bulan' => $key,
+                'jumlah_karyawan' => $group->count(),
+                'total_gaji' => $group->sum('total_gaji'),
+                'periode_label' => Carbon::createFromFormat('Y-m', $key)->translatedFormat('F Y'),
+            ];
+        })
+        ->sortKeysDesc()
+        ->values();
 
         $users = [];
         if ($isAdmin) {
@@ -75,34 +90,113 @@ class PayrollController extends Controller
             $this->pass("create payroll");
 
             $data = $request->validated();
+            // 'YYYY-MM'
+            $periode =  Carbon::parse($data['periode'])->format('Y-m');
 
-            $tgl_pengajuan = Carbon::parse($data['tanggal'] . ' 12:00:00')
+            $tgl_pengajuan = Carbon::parse($data['tanggal'])
                 ->timezone('Asia/Makassar')
                 ->format('Y-m-d');
 
-          // 'YYYY-MM'
-            $data['periode'] = Carbon::parse($data['periode'])->format('Y-m');
-            $data['tanggal'] = $tgl_pengajuan;
-            $data['status'] = 'Draft';
-            $data['approval_status'] = 'Pending';
-            $data['approved_by'] = null;
-            $data['approved_at'] = null;
+            $payload = [
+                'user_id' => $data['user_id'],
+                'periode' => $periode,
+                'tanggal' => $tgl_pengajuan,
+                'gaji_pokok' => $data['gaji_pokok'] ?? 0,
+                'tunjangan' => $data['tunjangan'] ?? 0,
+                'total_gaji' => $data['total_gaji'] ?? 0,
+                'status' => 'Draft',
+                'approval_status' => 'Pending',
+                'approved_by' => null,
+                'approved_at' => null,
+            ];
 
-            $payroll = Payroll::create($data);
+            Payroll::updateOrCreate(
+                ['user_id' => $data['user_id'], 'periode' => $periode],
+                $payload
+            );
 
-            // Log::debug('Payroll created:', [
-            //     'id' => $payroll->id,
-            //     'user_id' => $payroll->user_id, 
-            //     'periode' => $payroll->periode
-            // ]);
+            return redirect()->route('payroll.index')->with('success', 'Payroll berhasil dibuat atau diperbarui.');
+            } catch (\Exception $e) {
+                Log::error('Store Payroll Error: ' . $e->getMessage());
+                return back()->with('error', 'Gagal membuat payroll: ' . $e->getMessage());
+            }
+    }
 
-            return redirect()->route('payroll.index')->with('success', 'Payroll created successfully');
+    public function autoGenerate(Request $request)
+    {
+        try {
+            $periode = $request->input('periode');
 
+            if (!$periode) {
+                return redirect()->back()->with('error', 'Periode wajib dipilih.');
+            }
+
+            // filter admin lho ya cik
+            $users = User::whereHas('roles', function ($q) {
+                $q->whereNotIn('name', ['superadmin']);
+            })->where('status', 'Aktif')->get();
+
+            if ($users->isEmpty()) {
+                return redirect()->back()->with('error', 'Tidak ada user aktif untuk digenerate payroll-nya.');
+            }
+
+            foreach ($users as $user) {
+                $isExist = Payroll::where('user_id', $user->id)
+                    ->where('periode', $periode)
+                    ->exists();
+
+                if ($isExist) continue;
+
+                Payroll::create([
+                    'user_id' => $user->id,
+                    'periode' => $periode,
+                    'gaji_pokok' => $user->gaji_pokok ?? 0,
+                    'tunjangan' => $user->tunjangan ?? 0,
+                    'potongan' => 0,
+                    'total_gaji' => ($user->gaji_pokok ?? 0) + ($user->tunjangan ?? 0),
+                    'tanggal' => now(),
+                    'status' => 'Draft',
+                    'approval_status' => 'Pending',
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Payroll berhasil digenerate untuk periode ' . $periode . '!');
         } catch (\Exception $e) {
-            Log::error('Store error: ' . $e->getMessage());
-            return back()->with('error', 'Gagal membuat payroll: ' . $e->getMessage());
+            Log::error('Auto-generate payroll gagal:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->back()->with('error', 'Gagal generate payroll: ' . $e->getMessage());
         }
     }
+
+
+    public function availablePeriodesAll()
+    {
+        try {
+            $periodes = Absensi::where('approval_status', 'Approved')
+                ->get()
+                ->map(function ($absensi) {
+                    return Carbon::parse($absensi->tanggal)->format('Y-m');
+                })
+                ->unique()
+                ->sortDesc()
+                ->values();
+
+            return response()->json([
+                'success' => true,
+                'periodes' => $periodes,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mengambil periode absensi',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
     public function availablePeriodes(User $user) 
     {
@@ -135,7 +229,7 @@ class PayrollController extends Controller
     /**
      * Display the specified resource.
      */
-    public function showByPeriode(string $periode)
+    public function showByPeriode(Request $request, string $periode)
     {
         $user = Auth::user();
         $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();
@@ -148,13 +242,15 @@ class PayrollController extends Controller
 
         $periodeLabel = $periodeCarbon->translatedFormat('F Y');
 
-        
-
         $query = Payroll::with(['user.roles'])
             ->where('periode', 'LIKE', $periode . '%')
             ->whereHas('user.roles', function($q) {
                 $q->whereNotIn('name', ['superadmin']); // Exclude superadmin
             });
+
+        if ($request->has('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
         
             // Log::info('Payrolls for periode ' . $periode . ':', [
         //     'count' => $payrolls->count(),

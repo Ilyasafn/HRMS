@@ -35,7 +35,7 @@ type Props = PropsWithChildren & {
 const PayrollFormSheet: FC<Props> = ({ children, payroll, purpose, users }) => {
   const [open, setOpen] = useState(false);
   const [availablePeriodes, setAvailablePeriodes] = useState<string[]>([]);
-  const [absensiSummary, setAbsensiSummary] = useState<stringany>(null);
+  const [absensiSummary, setAbsensiSummary] = useState<any>(null);
 
   const { data, setData, put, post, reset, processing } = useForm({
     user_id: purpose === 'create' || purpose === 'duplicate' ? '' : (payroll?.user?.id.toString() ?? ''),
@@ -144,13 +144,13 @@ const PayrollFormSheet: FC<Props> = ({ children, payroll, purpose, users }) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
-        <ScrollArea className="w-full h-fit rounded-md">
+        <ScrollArea className={!absensiSummary ? '' : 'h-[34rem] w-full rounded-md'}>
           <DialogHeader>
             <DialogTitle>{capitalizeWords(purpose)} data payroll</DialogTitle>
             <DialogDescription>Form untuk {purpose} data payroll</DialogDescription>
           </DialogHeader>
           <form
-            className="space-y-6 px-4"
+            className="space-y-4 p-4"
             onSubmit={(e) => {
               e.preventDefault();
               handleSubmit();
@@ -220,6 +220,7 @@ const PayrollFormSheet: FC<Props> = ({ children, payroll, purpose, users }) => {
                             type="text"
                             value={formatRupiah(data.gaji_pokok)}
                             onChange={(e) => handleCurrencyChange('gaji_pokok', e.target.value)}
+                            disabled
                           />
                         </FormControl>
                         <div className="grid w-full grid-cols-2 gap-2">
@@ -231,6 +232,7 @@ const PayrollFormSheet: FC<Props> = ({ children, payroll, purpose, users }) => {
                                 type="text"
                                 value={formatRupiah(data.tunjangan)}
                                 onChange={(e) => handleCurrencyChange('tunjangan', e.target.value)}
+                                disabled
                               />
                             </FormControl>
                           </div>
@@ -241,6 +243,7 @@ const PayrollFormSheet: FC<Props> = ({ children, payroll, purpose, users }) => {
                                 type="text"
                                 value={formatRupiah(data.potongan)}
                                 onChange={(e) => handleCurrencyChange('potongan', e.target.value)}
+                                disabled
                               />
                             </FormControl>
                           </div>
@@ -252,6 +255,7 @@ const PayrollFormSheet: FC<Props> = ({ children, payroll, purpose, users }) => {
                             type="text"
                             value={formatRupiah(data.total_gaji)}
                             onChange={(e) => handleCurrencyChange('total_gaji', e.target.value)}
+                            disabled
                           />
                         </FormControl>
                         <FormControl className="w-full">

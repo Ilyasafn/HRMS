@@ -30,7 +30,7 @@ class CutiFactory extends Factory
                 "Pending", 
                 "Approved", 
                 "Rejected",
-                'Canceled'
+                "Canceled"
             ]),
             'approved_by' => User::pluck('id')->random(),
             'approved_at' => fake()->dateTimeBetween('now', '+1 day'),

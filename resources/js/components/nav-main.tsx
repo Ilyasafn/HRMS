@@ -1,15 +1,20 @@
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
+import { User } from '@/types/user';
 import { Link, usePage } from '@inertiajs/react';
+import { Badge } from './ui/badge';
 
 type Props = {
   items: NavItem[];
   label?: string;
+  user: User;
 };
 
-export function NavMain({ items = [], label }: Props) {
+export function NavMain({ items = [], label, user }: Props) {
   const { url } = usePage();
+  const isAdmin = user?.roles?.some((role) => ['admin', 'superadmin'].includes(role.name));
 
+  console.log('p', isAdmin);
   const isActive = (href: string) => {
     try {
       const path = new URL(href).pathname;
@@ -38,19 +43,26 @@ export function NavMain({ items = [], label }: Props) {
     <SidebarGroup className="px-2 py-0">
       <SidebarGroupLabel>{label ? label : 'Main Navigation'}</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => {
-          if (item.available === false) return null;
-          return (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={{ children: item.title }}>
-                <Link href={item.href} prefetch>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          );
-        })}
+        {items
+          .filter((item) => item.available !== false)
+          .map((item) => {
+            if (item.available === false) return null;
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={{ children: item.title }}>
+                  <Link href={item.href} prefetch>
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                    {isAdmin && item.badge ? (
+                      <Badge variant="secondary" className="ml-auto animate-spin">
+                        {item.badge}
+                      </Badge>
+                    ) : null}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
       </SidebarMenu>
     </SidebarGroup>
   );

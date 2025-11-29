@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Absensi;
 use App\Models\Cuti;
+use App\Models\Payroll;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -18,6 +19,15 @@ class DashboardController extends Controller
         $user = Auth::user();
         $userId = $user->id;
         $today = Carbon::now()->format('Y-m-d');
+        // $hasPending = false;
+
+        $absenPending = Absensi::where('approval_status', 'Pending')->count();
+        $cutiPending = Cuti::where('approval_status', 'Pending')->count();
+        $payrollPending = Payroll::where('approval_status', 'Pending')->count();
+
+        // if($absenPending || $cutiPending || $payrollPending) {
+        //     $hasPending = true;
+        // }
 
         // Data untuk user biasa
         $absensiHariIni = Absensi::where('user_id', $userId)
@@ -25,7 +35,7 @@ class DashboardController extends Controller
             ->first();
 
         $cutiHariIni = Cuti::where('user_id', $userId)
-            ->whereIn('approval_status', ['Pending', 'Approved'])
+            ->where('approval_status', 'Approved')
             ->where('tgl_mulai', '<=', date('Y-m-d'))
             ->where('tgl_selesai', '>=', date('Y-m-d'))
             ->first();
@@ -51,10 +61,17 @@ class DashboardController extends Controller
             $data['chart_data'] = $this->getChartAbsensiData(); 
         }
 
-        return Inertia::render('dashboard/index', $data);
+        return Inertia::render('dashboard/index',  [
+            ...$data,
+            'pending' => [
+                'absensi' => $absenPending,
+                'cuti' => $cutiPending,
+                'payroll' => $payrollPending,
+            ],
+        ]);
     }
 
-     private function getRekapAbsensiAllUsers()
+    private function getRekapAbsensiAllUsers()
     {
         return User::with('divisi')
             ->whereHas('roles', function($q) {
@@ -69,18 +86,22 @@ class DashboardController extends Controller
                     'divisi' => $user->divisi?->name,
                     'total_hadir' => Absensi::where('user_id', $user->id)
                         ->where('status', 'Hadir')
+                        ->where('approval_status', 'Approved')
                         ->count(),
                     'total_telat' => Absensi::where('user_id', $user->id)
                         ->where('status', 'Telat')
+                        ->where('approval_status', 'Approved')
                         ->count(),
                     'total_izin' => Absensi::where('user_id', $user->id)
                         ->whereIn('status', ['Sakit', 'Izin', 'Lainnya'])
+                        ->where('approval_status', 'Approved')
                         ->count(),
                     'total_cuti' => Absensi::where('user_id', $user->id)
                         ->where('status', 'Cuti')
                         ->count(),
                     'total_alpha' => Absensi::where('user_id', $user->id)
                         ->where('status', 'Alpha')
+                        ->where('approval_status', 'Approved')
                         ->count(),
                     'total_absensi' => Absensi::where('user_id', $user->id)->count(),
                 ];
@@ -103,37 +124,42 @@ class DashboardController extends Controller
         return [
             // Stats per Hari ini
             'hari_ini'=> [
-            'hadir' =>Absensi::whereDate('tanggal', $today)
-            ->whereIn('status', ['Hadir', 'Telat'])
-            ->count(),
-            'izin' => Absensi::whereDate('tanggal', $today)
-            ->whereIn('status', ['Sakit', 'Izin', 'Lainnya'])
-            ->count(),
-            'cuti' => Absensi::whereDate('tanggal', $today)
-            ->where('status', 'Cuti')
-            ->count(),
-            'alpha' => $this->getAlphaHariIni($today),
+                'hadir' =>Absensi::whereDate('tanggal', $today)
+                ->whereIn('status', ['Hadir', 'Telat'])
+                // ->where('approval_status', 'Approved')
+                ->count(),
+                'izin' => Absensi::whereDate('tanggal', $today)
+                ->whereIn('status', ['Sakit', 'Izin', 'Lainnya'])
+                ->where('approval_status', 'Approved')
+                ->count(),
+                'cuti' => Absensi::whereDate('tanggal', $today)
+                ->where('status', 'Cuti')
+                ->count(),
+                'alpha' => $this->getAlphaHariIni($today),
             ],
 
             // Stats per Bulan ini
             'all_time' => [
-            'hadir' => Absensi::whereYear('tanggal', $currentYear)
-                ->whereMonth('tanggal', $currentMonth)
-                ->whereIn('status', ['Hadir', 'Telat'])->count(),
-            'izin' => Absensi::whereYear('tanggal', $currentYear)
-                ->whereMonth('tanggal', $currentMonth)
-                ->whereIn('status', ['Sakit', 'Izin', 'Lainnya'])->count(),
-            'cuti' => Absensi::whereYear('tanggal', $currentYear)
-                ->whereMonth('tanggal', $currentMonth)
-                ->where('status', 'Cuti')->count(),
-            'alpha' => Absensi::whereYear('tanggal', $currentYear)
-                ->whereMonth('tanggal', $currentMonth)
-                ->where('status', 'Alpha')->count(),
-            'total_karyawan' => User::whereHas('roles', function($q) {
-                $q->whereNotIn('name', ['superadmin']);
-            })
-            ->where('status', 'Aktif')
-            ->count(),
+                'hadir' => Absensi::whereYear('tanggal', $currentYear)
+                    ->whereMonth('tanggal', $currentMonth)
+                    ->whereIn('status', ['Hadir', 'Telat'])
+                    ->where('approval_status', 'Approved')
+                    ->count(),
+                'izin' => Absensi::whereYear('tanggal', $currentYear)
+                    ->whereMonth('tanggal', $currentMonth)
+                    ->whereIn('status', ['Sakit', 'Izin', 'Lainnya'])
+                    ->where('approval_status', 'Approved')
+                    ->count(),
+                'cuti' => Absensi::whereYear('tanggal', $currentYear)
+                    ->whereMonth('tanggal', $currentMonth)
+                    ->where('status', 'Cuti')
+                    ->count(),
+                'alpha' => Absensi::whereYear('tanggal', $currentYear)
+                    ->whereMonth('tanggal', $currentMonth)
+                    ->where('status', 'Alpha')
+                    ->where('approval_status', 'Approved')
+                    ->count(),
+                'total_karyawan' => $totalKaryawan,
         ]
     ];
 }
@@ -153,6 +179,7 @@ private function getAlphaHariIni($today)
     private function getChartAbsensiData()
 {
     $chartData = Absensi::whereYear('tanggal', now()->year)
+        ->where('approval_status', 'Approved')
         ->selectRaw('MONTH(tanggal) as month, 
                 SUM(CASE WHEN status IN ("Hadir", "Telat") THEN 1 ELSE 0 END) as hadir,
                 SUM(CASE WHEN status = "Alpha" THEN 1 ELSE 0 END) as alpha,

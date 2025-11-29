@@ -97,13 +97,13 @@ const CutiFormSheet: FC<Props> = ({ children, cuti, purpose, users = [] }) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{capitalizeWords(purpose)} data cuti</DialogTitle>
-          <DialogDescription>Form untuk {purpose} data cuti</DialogDescription>
-        </DialogHeader>
-        <ScrollArea className="flex-1 overflow-y-auto">
+        <ScrollArea className="h-fit rounded-md">
+          <DialogHeader>
+            <DialogTitle>{capitalizeWords(purpose)} data cuti</DialogTitle>
+            <DialogDescription>Form untuk {purpose} data cuti</DialogDescription>
+          </DialogHeader>
           <form
-            className="space-y-6 px-4"
+            className="space-y-4 p-4"
             onSubmit={(e) => {
               e.preventDefault();
               handleSubmit();

@@ -37,6 +37,9 @@ class UpdateUserRequest extends FormRequest
             'status' => 'nullable|in:Aktif,Tidak Aktif',
             'custom_gaji_pokok' => 'nullable',
             'custom_tunjangan' => 'nullable',
+
+            'gaji_pokok' => 'nullable|numeric',
+            'tunjangan' => 'nullable|numeric',
         ];
     }
 
@@ -56,6 +59,8 @@ class UpdateUserRequest extends FormRequest
             'status.in' => 'Status harus Aktif atau Tidak Aktif.',
             'custom_gaji_pokok' => 'Custom gaji pokok harus berupa.',
             'custom_tunjangan' => 'Custom tunjangan harus berupa.',
+            'gaji_pokok.numeric' => 'Gaji pokok harus berupa angka.',
+            'tunjangan.numeric' => 'Tunjangan harus berupa angka.',
         ];
     }
 }

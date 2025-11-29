@@ -16,7 +16,7 @@ return new class extends Migration
             $table->decimal('tunjangan', 15,2);
             $table->decimal('potongan', 15,2)->default(0);
             $table->decimal('total_gaji', 15,2);
-            $table->date('tanggal');
+            $table->date('tanggal')->nullable();
             $table->enum('status', ['Draft', 'Finalized'])->default('Draft')->nullable();
 
             $table->enum('approval_status', ['Pending', 'Approved', 'Rejected'])->default('Pending')->nullable();

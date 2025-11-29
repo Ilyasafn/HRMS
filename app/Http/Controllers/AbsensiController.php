@@ -20,42 +20,47 @@ class AbsensiController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-{
-    $this->pass("index absensi");
+    {
+        $this->pass("index absensi");
 
-    $user = Auth::user();
-    
-    $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();
-    
-    // Query untuk list tanggal
-    $query = Absensi::query()
-        ->selectRaw('tanggal, count(*) as user_counts')
-        ->groupBy('tanggal')
-        ->orderByDesc('tanggal')
-        ->whereHas('user.roles', function($q) {
-                $q->whereNotIn('name', ['superadmin']); // Exclude superadmin
-            });
+        $user = Auth::user();
+        
+        $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();
+        
+        // Query untuk list tanggal
+        $query = Absensi::query()
+            ->selectRaw('tanggal, count(*) as user_counts')
+            ->selectRaw("SUM(CASE WHEN approval_status = 'Pending' THEN 1 ELSE 0 END) as pending_counts")
+            ->groupBy('tanggal')
+            ->orderByDesc('tanggal')
+            ->whereHas('user.roles', function($q) {
+                    $q->whereNotIn('name', ['superadmin']); // Exclude superadmin
+                });
 
-    // Filter untuk user biasa - SAMA DENGAN CUTI LOGIC
-    if (!$isAdmin) {
-        $query->where('user_id', $user->id);
+        // Filter untuk user biasa - SAMA DENGAN CUTI LOGIC
+        if (!$isAdmin) {
+            $query->where('user_id', $user->id);
+        }
+
+        if ($request->has('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        $data = $query->get();
+
+        return Inertia::render('absensi/index', [
+            'absensis' => $data,
+            'query' => $request->input(),
+            'users' => $isAdmin ? User::all() : [],
+            'isAdmin' => $isAdmin,
+            'permissions' => [
+                'canAdd' => $this->user->can("create absensi"),
+                'canShow' => $this->user->can("show absensi"),
+                'canUpdate' => $this->user->can("update absensi"),
+                'canDelete' => $this->user->can("delete absensi"),
+            ]
+        ]);
     }
-
-    $data = $query->get();
-
-    return Inertia::render('absensi/index', [
-        'absensis' => $data,
-        'query' => $request->input(),
-        'users' => $isAdmin ? User::all() : [],
-        'isAdmin' => $isAdmin,
-        'permissions' => [
-            'canAdd' => $this->user->can("create absensi"),
-            'canShow' => $this->user->can("show absensi"),
-            'canUpdate' => $this->user->can("update absensi"),
-            'canDelete' => $this->user->can("delete absensi"),
-        ]
-    ]);
-}
 
     /**
      * Store a newly created resource in storage.
