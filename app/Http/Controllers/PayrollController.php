@@ -29,44 +29,46 @@ class PayrollController extends Controller
     $user = Auth::user();
     $isAdmin = $user->roles()->whereIn('name', ['admin', 'superadmin'])->exists();
 
-    $query = Payroll::selectRaw('Date_FORMAT(periode, "%Y-%m") as periode_bulan')
-        ->selectRaw('COUNT(id) as jumlah_karyawan')
-        ->selectRaw('SUM(total_gaji) as total_gaji')
-        ->groupBy('periode_bulan')
-        ->orderByDesc('periode_bulan')
-        ->whereHas('user.roles', function($q) {
-                $q->whereNotIn('name', ['superadmin']); // Exclude superadmin
-            });
+    // Build base query (with eager load)
+    $query = Payroll::with('user.roles')
+        ->whereHas('user.roles', function ($q) {
+            $q->whereNotIn('name', ['superadmin']); // exclude superadmin
+        });
 
-        if (!$isAdmin) {
-            $query->where('user_id', $user->id);
-        }
+    // If not admin, limit to current user
+    if (!$isAdmin) {
+        $query->where('user_id', $user->id);
+    }
 
-        if ($request->has('user_id')) {
-            $query->where('user_id', $request->user_id);
-        }
+    // If request asks for specific user_id, apply (admins only typically)
+    if ($request->has('user_id') && $request->user_id) {
+        $query->where('user_id', $request->user_id);
+    }
 
-        $payrolls = Payroll::with('user.roles')
-        ->whereHas('user.roles', function($q) {
-            $q->whereNotIn('name', ['superadmin']);
+    // Get collection (after applying filters)
+    $payrollCollection = $query->get();
+
+    // Group by periode (Y-m) and compute aggregates including pending_counts
+    $payrolls = $payrollCollection
+        ->groupBy(function ($p) {
+            return Carbon::parse($p->periode)->format('Y-m');
         })
-        ->get()
-        ->groupBy(fn($p) => Carbon::parse($p->periode)->format('Y-m'))
-        ->map(function($group, $key) {
+        ->map(function ($group, $key) {
             return [
-                'periode_bulan' => $key,
-                'jumlah_karyawan' => $group->count(),
-                'total_gaji' => $group->sum('total_gaji'),
-                'periode_label' => Carbon::createFromFormat('Y-m', $key)->translatedFormat('F Y'),
+                'periode_bulan'    => $key,
+                'periode_label'    => Carbon::createFromFormat('Y-m', $key)->translatedFormat('F Y'),
+                'jumlah_karyawan'  => $group->count(),
+                'total_gaji'       => $group->sum('total_gaji'),
+                'pending_counts'   => $group->where('approval_status', 'Pending')->count(),
             ];
         })
         ->sortKeysDesc()
         ->values();
 
-        $users = [];
-        if ($isAdmin) {
-            $users = User::select('id', 'name')->get();
-        }
+    $users = [];
+    if ($isAdmin) {
+        $users = User::select('id', 'name')->get();
+    }
 
     return Inertia::render('payroll/index', [
         'payrolls' => $payrolls,
@@ -80,6 +82,7 @@ class PayrollController extends Controller
         ]
     ]);
 }
+
 
     /**
      * Store a newly created resource in storage.

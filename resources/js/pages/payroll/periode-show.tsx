@@ -125,6 +125,7 @@ const PayrollUserList: FC<Props> = ({ payrolls, query = {}, users }) => {
             <TableHead>Gaji Pokok</TableHead>
             <TableHead>Tanggal Pengajuan</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Approval Status</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -159,6 +160,9 @@ const PayrollUserList: FC<Props> = ({ payrolls, query = {}, users }) => {
                   <TableCell>{payroll.tanggal}</TableCell>
                   <TableCell>
                     <StatusBadge status={payroll.status} />
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status={payroll.approval_status} />
                   </TableCell>
                   <TableCell>
                     {permissions?.canShow && (

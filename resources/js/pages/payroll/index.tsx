@@ -22,9 +22,10 @@ type Props = {
   payrolls: Payroll[];
   query: { [key: string]: string };
   users: User[];
+  isAdmin: boolean;
 };
 
-const PayrollList: FC<Props> = ({ payrolls, query, users }) => {
+const PayrollList: FC<Props> = ({ payrolls, query, users, isAdmin }) => {
   const [ids, setIds] = useState<number[]>([]);
   const [cari, setCari] = useState('');
 
@@ -126,7 +127,7 @@ const PayrollList: FC<Props> = ({ payrolls, query, users }) => {
               </Button>
             </TableHead>
             <TableHead>Periode</TableHead>
-            <TableHead>Jumlah Karyawan</TableHead>
+            {isAdmin && <TableHead>Jumlah Karyawan</TableHead>}
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -152,16 +153,20 @@ const PayrollList: FC<Props> = ({ payrolls, query, users }) => {
                   </Button>
                 </TableCell>
                 <TableCell>{payroll.periode_label}</TableCell>
-                <TableCell>{payroll.jumlah_karyawan}</TableCell>
+                {isAdmin && <TableCell>{payroll.jumlah_karyawan}</TableCell>}
                 <TableCell>
-                  {permissions?.canShow && (
-                    <Link href={route('payroll.periode.show', { periode: String(payroll.periode_bulan) })}>
-                      <Button variant={'ghost'} size={'icon'}>
+                  <div className="relative inline-block">
+                    <Button variant={'ghost'} size={'icon'}>
+                      <Link href={route('payroll.periode.show', { periode: String(payroll.periode_bulan) })}>
                         <Folder />
-                        <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-xs text-white"></span>
-                      </Button>
-                    </Link>
-                  )}
+                      </Link>
+                    </Button>
+                    {isAdmin && payroll.pending_counts > 0 && (
+                      <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-yellow-600 text-[10px] text-white">
+                        {payroll.pending_counts}
+                      </span>
+                    )}
+                  </div>
                   {permissions?.canUpdate && (
                     <>
                       <PayrollFormSheet purpose="edit" payroll={payroll} users={users}>

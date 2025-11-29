@@ -20,4 +20,5 @@ export type Payroll = {
   approved_at: string;
   created_at: string;
   updated_at: string;
+  pending_counts: number;
 };
